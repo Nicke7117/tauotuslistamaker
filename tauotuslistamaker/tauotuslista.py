@@ -1,6 +1,7 @@
-class CheckoutLanes:
+class Tauotuslista:
     """
-    A class representing the checkout lanes in a store.
+    A class representing the "tauotuslista" of a store.
+    Tauotuslista = a list where the cashiers of a store can see when their breaks are and where they are supposed to be at any given time.
 
     Attributes:
     - amount_of_checkouts (int): the total number of checkout lanes in the store.
@@ -17,4 +18,3 @@ class CheckoutLanes:
         self.most_popular_checkouts = most_popular_checkouts
         self.extra_checkouts = extra_checkouts
         self.self_service_checkouts = self_service_checkouts
-
