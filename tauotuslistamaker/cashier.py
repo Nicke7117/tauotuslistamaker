@@ -64,7 +64,7 @@ class Cashier:
             start_time = start_time + timedelta(minutes=split_shift)
             start_time_rounded = round_time_to_nearest_quarter(start_time)
             end_time = start_time_rounded + timedelta(minutes=breaks_length[i])
-            breaks.append({"start_time": start_time_rounded.strftime(
-                "%H:%M"), "end_time": end_time.strftime("%H:%M")})
+            breaks.append(
+                {"start_time": start_time_rounded, "end_time": end_time})
 
-        return {self.name: breaks}
+        return {"name": self.name, "breaks": breaks}
