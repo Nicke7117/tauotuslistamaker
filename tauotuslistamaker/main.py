@@ -1,5 +1,6 @@
 import json
 from cashier import calculate_optimal_break_times
+from tauotuslista import create_breaks_list
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
         print(f"Error: {e}")
         return
     cashiers_optimal_break_times = calculate_optimal_break_times(cashiers)
+    breaks_list = create_breaks_list(cashiers_optimal_break_times)
 
 
 if __name__ == "__main__":
