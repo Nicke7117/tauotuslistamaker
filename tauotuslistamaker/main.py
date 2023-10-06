@@ -1,12 +1,13 @@
 import json
-from cashier import calculate_optimal_break_times
+from cashier import calculate_optimal_break_times, turn_cashiers_shift_start_and_end_times_to_datetime
 from tauotuslista import create_breaks_list
 
 
 def main():
     try:
         with open("cashiers.json", "r") as json_file:
-            cashiers = json.load(json_file)
+            cashiers = turn_cashiers_shift_start_and_end_times_to_datetime(
+                json.load(json_file))
     except FileNotFoundError:
         print("cashiers.json not found")
         return
