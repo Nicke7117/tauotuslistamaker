@@ -1,9 +1,10 @@
 import json
 from cashier import calculate_optimal_break_times, turn_cashiers_shift_start_and_end_times_to_datetime
-from tauotuslista import create_breaks_list
+from tauotuslista import create_breaks_list, assign_tauottajat
 
 
 def main():
+    # TODO make cashiers a list and remove the "cashiers" key
     try:
         with open("cashiers.json", "r") as json_file:
             cashiers = turn_cashiers_shift_start_and_end_times_to_datetime(
@@ -19,6 +20,8 @@ def main():
         return
     cashiers_optimal_break_times = calculate_optimal_break_times(cashiers)
     breaks_list = create_breaks_list(cashiers_optimal_break_times)
+    breaks_list_with_assigned_tauottajat = assign_tauottajat(
+        breaks_list, cashiers)
 
 
 if __name__ == "__main__":
