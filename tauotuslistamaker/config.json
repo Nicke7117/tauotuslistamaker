@@ -1,0 +1,7 @@
+{
+    "checkout_lanes": 15,
+    "most_popular_checkouts": [14, 15],
+    "least_popular_checkouts": [4, 5, 6],
+    "extra_checkouts": [2, 3],
+    "self_service_checkouts": [{"name": "Self Service 1", "opening_time": "09:00", "closing_time": "21:00"}, {"name": "Self Service 2", "opening_time": "09:00", "closing_time": "21:00"}]
+}

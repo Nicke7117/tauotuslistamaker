@@ -130,3 +130,8 @@ def assign_tauottajat(breaks_list, cashiers):
                             break
 
     return final_tauotuslista
+
+def create_seating_arrangement(breaks_list, amount_of_checkout_lanes, most_popular_checkouts, least_popular_checkouts, self_service_checkouts, extra_checkouts):
+    pass
+
+

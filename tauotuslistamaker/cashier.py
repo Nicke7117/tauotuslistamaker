@@ -3,7 +3,7 @@ from utils import round_time_to_nearest_quarter
 
 
 def calculate_optimal_break_times(cashiers):
-    # TODO: do not use strptime
+    # TODO: remove tauottaja key and only have arrays of containing the break dicts
     cashiers_breaks = []
     for cashier in cashiers["cashiers"]:
         start_time = cashier["shift_start"]
