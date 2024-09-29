@@ -45,4 +45,8 @@ def turn_cashiers_shift_start_and_end_times_to_datetime(cashiers):
         cashier["shift_start"] = datetime.strptime(
             cashier["shift_start"], "%H:%M")
         cashier["shift_end"] = datetime.strptime(cashier["shift_end"], "%H:%M")
+
+        # If the shift ends at 00:00 or later, it means that the shift ends the next day
+        if cashier["shift_start"] > cashier["shift_end"]:
+            cashier["shift_end"] = cashier["shift_end"] + timedelta(days=1)
     return cashiers

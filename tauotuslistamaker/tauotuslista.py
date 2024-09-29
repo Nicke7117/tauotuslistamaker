@@ -56,6 +56,7 @@ def create_breaks_list(cashiers_optimal_break_times):
 
 
 def assign_tauottajat(breaks_list, cashiers):
+    cashiers_copy = copy.deepcopy(cashiers)
     # Sort the list of dictionaries in descending order based on the length of the "breaks" list
     sorted_breaks_list = sorted(
         breaks_list, key=lambda x: len(x["breaks"]), reverse=True)
@@ -92,8 +93,9 @@ def assign_tauottajat(breaks_list, cashiers):
                         current_best_tauottaja_candidate["breaks"])
         else:
             final_tauotuslista.append(current_best_tauottaja_candidate)
-        cashiers["cashiers"][:] = [cashier for cashier in cashiers["cashiers"]
-                                   if cashier.get("name") != current_best_tauottaja_candidate["name"]]
+        # Remove the selected cashier from the copy
+        cashiers_copy["cashiers"][:] = [cashier for cashier in cashiers_copy["cashiers"]
+                                        if cashier.get("name") != current_best_tauottaja_candidate["name"]]
         for break_ in current_best_tauottaja_candidate["breaks"]:
             for tauottaja in sorted_breaks_list:
                 if break_ in tauottaja["breaks"]:
@@ -131,7 +133,37 @@ def assign_tauottajat(breaks_list, cashiers):
 
     return final_tauotuslista
 
-def create_seating_arrangement(breaks_list, amount_of_checkout_lanes, most_popular_checkouts, least_popular_checkouts, self_service_checkouts, extra_checkouts):
+
+def get_cashiers_availability(cashiers, breaks_list_with_assigned_tauottajat):
+    cashiers_availability = []
+    for cashier in cashiers["cashiers"]:
+        availability = [{"start_time": cashier["shift_start"],
+                         "end_time": cashier["shift_end"]}]
+        for tauottaja in breaks_list_with_assigned_tauottajat:
+            if tauottaja["name"] == "itse" or tauottaja["name"] == cashier["name"]:
+                for break_ in tauottaja["breaks"]:
+                    if break_["name"] == cashier["name"]:
+                        modify_cashier_availability(
+                            availability, break_["start_time"], break_["end_time"])
+        cashiers_availability.append(
+            {"name": cashier["name"], "availability": availability})
+    return cashiers_availability
+
+
+def modify_cashier_availability(availability, unavailable_from, unavailable_to):
+    for availability_time in availability:
+        # check if unavailable_from and unavailable_to are within the availability_time
+        if availability_time["start_time"] <= unavailable_from and availability_time["end_time"] >= unavailable_to:
+            # split the availability_time into two parts, the first part is from start_time to unavailable_from and the second part is from unavailable_to to end_time
+            availability_time_1 = {
+                "start_time": availability_time["start_time"], "end_time": unavailable_from}
+            availability_time_2 = {
+                "start_time": unavailable_to, "end_time": availability_time["end_time"]}
+            # remove the availability_time from the availability list and add the two new availability_times to the list
+            availability.remove(availability_time)
+            availability.append(availability_time_1)
+            availability.append(availability_time_2)
+
+
+def create_seating_arrangement(cashiers_availability, amount_of_checkout_lanes, most_popular_checkouts, least_popular_checkouts, self_service_checkouts, extra_checkouts):
     pass
-
-

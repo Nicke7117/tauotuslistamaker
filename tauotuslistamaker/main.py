@@ -1,6 +1,6 @@
 import json
 from cashier import calculate_optimal_break_times, turn_cashiers_shift_start_and_end_times_to_datetime
-from tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement
+from tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement, get_cashiers_availability
 
 
 def main():
@@ -31,13 +31,14 @@ def main():
     except Exception as e:
         print(f"Error: {e}")
         return
-    print(config)
     cashiers_optimal_break_times = calculate_optimal_break_times(cashiers)
     breaks_list = create_breaks_list(cashiers_optimal_break_times)
     breaks_list_with_assigned_tauottajat = assign_tauottajat(
         breaks_list, cashiers)
-    cashier_seating_arrangement = create_seating_arrangement(
-        breaks_list_with_assigned_tauottajat, config["checkout_lanes"], config["most_popular_checkouts"], config["least_popular_checkouts"], config["self_service_checkouts"], config["extra_checkouts"])
+    cashiers_availability = get_cashiers_availability(
+        cashiers, breaks_list_with_assigned_tauottajat)
+    cashier_seating_arrangement = create_seating_arrangement(cashiers_availability,
+                                                             breaks_list_with_assigned_tauottajat, config["checkout_lanes"], config["most_popular_checkouts"], config["least_popular_checkouts"], config["self_service_checkouts"], config["extra_checkouts"])
 
 
 if __name__ == "__main__":
