@@ -143,26 +143,28 @@ def get_cashiers_availability(cashiers, breaks_list_with_assigned_tauottajat):
             if tauottaja["name"] == "itse" or tauottaja["name"] == cashier["name"]:
                 for break_ in tauottaja["breaks"]:
                     if break_["name"] == cashier["name"]:
-                        modify_cashier_availability(
-                            availability, break_["start_time"], break_["end_time"])
+                        for availability_time in availability:
+                            if break_["start_time"] >= availability_time["start_time"] and break_["end_time"] <= availability_time["end_time"]:
+                                split_time_ranges = split_time_range(availability_time["start_time"], availability_time["end_time"], break_[
+                                                                     "start_time"], break_["end_time"], "start_time", "end_time")
+                                availability.remove(availability_time)
+                                availability.extend(split_time_ranges)
         cashiers_availability.append(
             {"name": cashier["name"], "availability": availability})
     return cashiers_availability
 
 
-def modify_cashier_availability(availability, unavailable_from, unavailable_to):
-    for availability_time in availability:
-        # check if unavailable_from and unavailable_to are within the availability_time
-        if availability_time["start_time"] <= unavailable_from and availability_time["end_time"] >= unavailable_to:
-            # split the availability_time into two parts, the first part is from start_time to unavailable_from and the second part is from unavailable_to to end_time
-            availability_time_1 = {
-                "start_time": availability_time["start_time"], "end_time": unavailable_from}
-            availability_time_2 = {
-                "start_time": unavailable_to, "end_time": availability_time["end_time"]}
-            # remove the availability_time from the availability list and add the two new availability_times to the list
-            availability.remove(availability_time)
-            availability.append(availability_time_1)
-            availability.append(availability_time_2)
+def split_time_range(current_start_time_from, current_end_time_to, time_to_split_from, time_to_split_to, time_start_key, time_end_key):
+    if current_start_time_from <= time_to_split_from and current_end_time_to >= time_to_split_from:
+        time_range_1 = {
+            time_start_key: current_start_time_from, time_end_key: time_to_split_from}
+        time_range_2 = {
+            time_start_key: time_to_split_to, time_end_key: current_end_time_to}
+        return [time_range_1, time_range_2]
+    elif time_to_split_from <= current_start_time_from and time_to_split_to < current_end_time_to:
+        return [{time_start_key: time_to_split_to, time_end_key: current_end_time_to}]
+    elif time_to_split_from > current_start_time_from and time_to_split_to >= current_end_time_to:
+        return [{time_start_key: current_start_time_from, time_end_key: time_to_split_from}]
 
 
 def create_seating_arrangement(cashiers_availability, amount_of_checkout_lanes, most_popular_checkouts, least_popular_checkouts, self_service_checkouts, extra_checkouts):
