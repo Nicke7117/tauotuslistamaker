@@ -1,5 +1,6 @@
 {
-    "checkout_lanes": 15,
+    "opening_hours": {"opening_time": "08:00", "closing_time": "22:00"}, 
+    "checkout_lanes_filling_order": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
     "most_popular_checkouts": [14, 15],
     "least_popular_checkouts": [4, 5, 6],
     "extra_checkouts": [2, 3],
