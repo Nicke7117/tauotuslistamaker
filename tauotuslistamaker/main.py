@@ -41,30 +41,37 @@ def main():
         cashiers, breaks_list_with_assigned_tauottajat)
     cashier_seating_arrangement = create_seating_arrangement(cashiers_availability,
                                                            config["checkout_lanes_filling_order"], config["self_service_checkouts"])
-#what dis?
-"""    for lane in cashier_seating_arrangement:
-        sorted_cashiers = sorted(
-            lane["cashiers"], key=lambda x: x["assigned_time_range"]["start_time"])
-    for cashier in cashiers_availability:
+    enrich_breaks_list_with_assigned_checkouts(
+        breaks_list_with_assigned_tauottajat, cashier_seating_arrangement)
+    format_output(cashier_seating_arrangement, breaks_list_with_assigned_tauottajat)
 
-        for availability in cashier["availability"]:
-            start_time = availability["start_time"].strftime("%H:%M")
-            end_time = availability["end_time"].strftime("%H:%M")
+def enrich_breaks_list_with_assigned_checkouts(breaks_list, cashier_seating_arrangement):
+    for checkout in cashier_seating_arrangement:
+        for cashier in checkout["cashiers"]:
+            for tauottaja in breaks_list:
+                for break_ in tauottaja["breaks"]:
+                    if break_["name"] == cashier["name"] and cashier["assigned_time_range"]["start_time"] <= break_["start_time"] <= cashier["assigned_time_range"]["end_time"]:
+                        break_["assigned_checkout"] = checkout["checkout"]
 
-        for break_ in breaks_list_with_assigned_tauottajat:
-            for break_time in break_["breaks"]:
-                if break_time["name"] == cashier["name"]:
-                    start_time = break_time["start_time"].strftime("%H:%M")
-                    end_time = break_time["end_time"].strftime("%H:%M")
 
-        for lane in cashier_seating_arrangement:
-            if cashier["name"] in [c["name"] for c in lane["cashiers"]]:
-                for assigned_cashier in lane["cashiers"]:
-                    if assigned_cashier["name"] == cashier["name"]:
-                        start_time = assigned_cashier["assigned_time_range"]["start_time"].strftime(
-                            "%H:%M")
-                        end_time = assigned_cashier["assigned_time_range"]["end_time"].strftime(
-                            "%H:%M") """
+        
+                
+    
+
+def format_output(cashier_seating_arrangement, tauottajat):
+    for checkout in cashier_seating_arrangement:
+        print(f"Checkout {checkout['checkout']}:")
+        # sort cashiers by assigned time range start time
+        checkout["cashiers"].sort(key=lambda x: x["assigned_time_range"]["start_time"])
+        for cashier in checkout["cashiers"]:
+            print(f"\t{cashier['name']} ({cashier["assigned_time_range"]['start_time'].strftime("%H:%M")} - {cashier["assigned_time_range"]['end_time'].strftime("%H:%M")})")
+        print("Tauottajat:")
+        print(tauottajat)
+        for tauottaja in tauottajat:
+            print(f"{tauottaja["name"]}")
+            for break_ in tauottaja["breaks"]:
+                print(f"\t{break_['name']}, checkout {break_['assigned_checkout']} ({break_['start_time'].strftime("%H:%M")} - {break_['end_time'].strftime("%H:%M")})")
+            
 
 
 if __name__ == "__main__":
