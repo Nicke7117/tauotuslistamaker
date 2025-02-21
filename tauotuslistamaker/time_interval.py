@@ -14,7 +14,7 @@ class TimeInterval:
             raise ValueError("Time must be a datetime object")
         return self.start_time < time < self.end_time
     
-    def contains_interval(self, interval: TimeInterval) -> bool:
+    def contains_interval(self, interval: "TimeInterval") -> bool:
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")
         return self.start_time <= interval.start_time and self.end_time >= interval.end_time
@@ -24,7 +24,7 @@ class TimeInterval:
             raise ValueError("Time must be a datetime object")
         return self.end_time <= time
     
-    def split_interval_with(self, interval: TimeInterval) -> list:
+    def split_interval_with(self, interval: "TimeInterval") -> list:
         if self.start_time < interval.start_time and self.end_time > interval.end_time:
             return [ TimeInterval(self.start_time, interval.start_time), TimeInterval(interval.end_time, self.end_time) ]
         elif interval.start_time <= self.start_time and interval.end_time < self.end_time:
