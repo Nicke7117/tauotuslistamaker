@@ -1,38 +1,16 @@
-import json
-from cashier import calculate_optimal_break_times, turn_cashiers_shift_start_and_end_times_to_datetime
+from cashier import calculate_optimal_break_times
 from tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement, get_cashiers_availability
 import copy
+from data_manager import DataManager
 
 
 def main():
     # TODO make cashiers a list and remove the "cashiers" key
-    try:
-        with open("cashiers.json", "r") as json_file:
-            cashiers = turn_cashiers_shift_start_and_end_times_to_datetime(
-                json.load(json_file))
-            cashiers_shift_start_and_end_times = copy.deepcopy(cashiers)
-    except FileNotFoundError:
-        print("cashiers.json not found")
-        return
-    except json.decoder.JSONDecodeError:
-        print("cashiers.json is not a valid json file")
-        return
-    except Exception as e:
-        print(f"Error: {e}")
-        return
-
-    try:
-        with open("config.json", "r") as json_file:
-            config = json.load(json_file)
-    except FileNotFoundError:
-        print("config.json not found")
-        return
-    except json.decoder.JSONDecodeError:
-        print("config.json is not a valid json file")
-        return
-    except Exception as e:
-        print(f"Error: {e}")
-        return
+    data_manager = DataManager()
+    data_manager.load_data("cashiers.json")
+    data_manager.load_config("config.json")
+    cashiers = data_manager.cashiers
+    config = data_manager.config
     cashiers_optimal_break_times = calculate_optimal_break_times(cashiers)
     breaks_list = create_breaks_list(cashiers_optimal_break_times)
     breaks_list_with_assigned_tauottajat = assign_tauottajat(
