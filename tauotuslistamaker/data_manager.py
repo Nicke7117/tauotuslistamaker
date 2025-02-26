@@ -1,6 +1,8 @@
 import json
 from datetime import datetime, timedelta
 from time_interval import TimeInterval
+from cashier import Cashier
+
 class DataManager:
     def __init__(self):
         self.cashiers = []
@@ -13,6 +15,7 @@ class DataManager:
                 # keep validation and data transformation in separate methods to keep the code clean and maintainable
                 self.__validate_cashiers_data()
                 self.__transform_cashiers_shift_intervals_to_TimeInterval_objects()
+                self.__transform_cashiers_to_cashier_objects()
         except FileNotFoundError:
             raise FileNotFoundError(f"{file_name} not found")
         except json.decoder.JSONDecodeError:
@@ -55,6 +58,12 @@ class DataManager:
             # remove the original shift start and end times
             del cashier["shift_start"]
             del cashier["shift_end"]
+    
+    def __transform_cashiers_to_cashier_objects(self):
+        cashier_objects = []
+        for cashier in self.cashiers:
+            cashier_objects.append(Cashier(cashier["name"], cashier["shift_interval"]))
+        self.cashiers = cashier_objects
         
     def load_config(self, file_name: str) -> None:
         try:
