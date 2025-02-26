@@ -24,7 +24,9 @@ class TimeInterval:
             raise ValueError("Time must be a datetime object")
         return self.end_time <= time
     
-    def split_interval_with(self, interval: "TimeInterval") -> list:
+    def remove_overlap(self, interval: "TimeInterval") -> list:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
         if self.start_time < interval.start_time and self.end_time > interval.end_time:
             return [ TimeInterval(self.start_time, interval.start_time), TimeInterval(interval.end_time, self.end_time) ]
         elif interval.start_time <= self.start_time and interval.end_time < self.end_time:
@@ -33,4 +35,22 @@ class TimeInterval:
             return [ TimeInterval(self.start_time, interval.start_time) ]
         else:
             raise ValueError("Intervals are the same or do not overlap")
+    
+    def length_in_minutes(self):
+        return (self.end_time - self.start_time).total_seconds() / 60
+    
+    def split_into_smaller_intervals(self, time_intervals: list) -> list:
+        if not all(isinstance(interval, TimeInterval) for interval in time_intervals):
+            raise ValueError("All elements in the list must be TimeInterval objects")
+        smaller_intervals = [self]
+        for interval_to_remove in time_intervals:
+            i = 0
+            while i < len(smaller_intervals):
+                if smaller_intervals[i].contains_interval(interval_to_remove):
+                    splitted_segment = smaller_intervals[i].remove_overlap(interval_to_remove)
+                    smaller_intervals.pop(i)
+                    smaller_intervals[i:i] = splitted_segment
+                i += 1
+
+        return smaller_intervals
         
