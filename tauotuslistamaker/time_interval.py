@@ -53,4 +53,9 @@ class TimeInterval:
                 i += 1
 
         return smaller_intervals
+    
+    def starts_ealier_than(self, time_interval: "TimeInterval") -> bool:
+        if not isinstance(time_interval, TimeInterval):
+            raise ValueError("time_interval must be a TimeInterval object")
+        return self.start_time < time_interval.start_time
         
