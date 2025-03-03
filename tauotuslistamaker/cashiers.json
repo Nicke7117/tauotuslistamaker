@@ -1,9 +1,8 @@
-{
-    "cashiers": [
+[
         {
             "name": "Catrin",
             "shift_start": "11:00",
-            "shift_end": "19:15"
+            "shift_end": "01:15"
         },
         {
             "name": "Marwa",
@@ -76,4 +75,3 @@
             "shift_end": "23:30"            
         }
     ]
-}
