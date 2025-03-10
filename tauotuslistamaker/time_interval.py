@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 
 class TimeInterval:
     def __init__(self, start_time: datetime, end_time: datetime) -> None:
@@ -24,6 +25,11 @@ class TimeInterval:
             raise ValueError("Time must be a datetime object")
         return self.end_time <= time
     
+    def ends_after(self, time: datetime) -> bool:
+        if not isinstance(time, datetime):
+            raise ValueError("Time must be a datetime object")
+        return self.end_time > time
+    
     def remove_overlap(self, interval: "TimeInterval") -> list:
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")
@@ -35,6 +41,19 @@ class TimeInterval:
             return [ TimeInterval(self.start_time, interval.start_time) ]
         else:
             raise ValueError("Intervals are the same or do not overlap")
+        
+    def end_time_overlap_in_min(self, start_time: datetime) -> int:
+        if not isinstance(start_time, datetime):
+            raise ValueError("Start time must be a datetime object")
+        if self.end_time > start_time:
+            return (self.end_time - start_time).total_seconds() / 60
+        else:
+            return 0
+        
+    def push_time_interval_forward(self, minutes: int) -> None:
+        self.start_time += timedelta(minutes=minutes)
+        self.end_time += timedelta(minutes=minutes)
+
     
     def length_in_minutes(self):
         return (self.end_time - self.start_time).total_seconds() / 60

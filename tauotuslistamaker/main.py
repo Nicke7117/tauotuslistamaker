@@ -1,7 +1,7 @@
-from cashier import calculate_optimal_break_times
 from tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement, get_cashiers_availability
 import copy
 from data_manager import DataManager
+from break_manager import BreakManager
 
 
 def main():
@@ -11,10 +11,8 @@ def main():
     data_manager.load_config("config.json")
     cashiers = data_manager.cashiers
     config = data_manager.config
-    cashiers_optimal_break_times = calculate_optimal_break_times(cashiers)
-    breaks_list = create_breaks_list(cashiers_optimal_break_times)
-    breaks_list_with_assigned_tauottajat = assign_tauottajat(
-        breaks_list, cashiers)
+    break_manager = BreakManager(cashiers)
+
     cashiers_availability = get_cashiers_availability(
         cashiers, breaks_list_with_assigned_tauottajat)
     cashier_seating_arrangement = create_seating_arrangement(cashiers_availability,

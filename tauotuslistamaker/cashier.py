@@ -8,7 +8,7 @@ class Cashier:
         self.shift_interval = shift_interval
         self.break_times = self.__calculate_breaks()
         # maybe store the information about the assigned checkout in working_segments
-        self.working_segments = self.__get_working_segments()
+        self.working_segments = self._get_working_segments()
 
     def __calculate_breaks(self):
         shift_length_minutes = self.shift_interval.length_in_minutes()
@@ -38,17 +38,10 @@ class Cashier:
         
         return cashier_breaks
     
-    def __get_working_segments(self):
+    def _get_working_segments(self):
         # Generate working segments by removing break intervals from the shift interval
         self.working_segments = self.shift_interval.split_into_smaller_intervals(self.break_times)
         return self.working_segments
-    
-    def get_earliest_break(self):
-        # Return the earliest break interval
-        if self.break_times:
-            return self.break_times[0]
-        else:
-            raise ValueError("Cashier has no breaks")
         
     def remove_earliest_break(self):
         # Remove the earliest break interval
