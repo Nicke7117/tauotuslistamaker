@@ -1,7 +1,7 @@
-from tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement, get_cashiers_availability
+from .tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement, get_cashiers_availability
 import copy
-from data_manager import DataManager
-from break_manager import BreakManager
+from .managers import DataManager
+from .managers import BreakManager
 
 
 def main():
@@ -12,6 +12,11 @@ def main():
     cashiers = data_manager.cashiers
     config = data_manager.config
     break_manager = BreakManager(cashiers)
+    breaks_segments = break_manager.breaks_segments_list
+    print(breaks_segments)
+    for segment in breaks_segments:
+        for break_ in segment["breaks"]:
+            print(break_)
 
     cashiers_availability = get_cashiers_availability(
         cashiers, breaks_list_with_assigned_tauottajat)

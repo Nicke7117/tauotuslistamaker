@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
-from time_interval import TimeInterval
-from cashier import Cashier
+from ..models import TimeInterval
+from ..models import Cashier
 
 class DataManager:
     def __init__(self):
