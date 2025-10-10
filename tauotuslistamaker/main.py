@@ -108,8 +108,9 @@ def print_tauotuslista_pretty(assignments):
         else:
             # Show complete schedule for assigned tauottaja
             print("  📅 Complete Schedule:")
-            if tau.schedule.all_events:
-                for sched_idx, interval in enumerate(sorted(tau.schedule.all_events, key=lambda x: x.start_time), 1):
+            events = tau.events
+            if events:
+                for sched_idx, interval in enumerate(sorted(events, key=lambda x: x.start_time), 1):
                     start_time = getattr(interval, 'start_time', None)
                     end_time = getattr(interval, 'end_time', None)
                     

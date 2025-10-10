@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from ..utils import time_diff_in_minutes
 from typing import List, Dict, Tuple, Any, TYPE_CHECKING
-from copy import deepcopy
 
 if TYPE_CHECKING:
     from ..models import Cashier, CashierBreak
@@ -29,7 +28,7 @@ class BreakManager:
         
         all_breaks_list: List["CashierBreak"] = []
         for cashier in self.cashiers:
-            all_breaks_list.extend(cashier.schedule.all_breaks) 
+            all_breaks_list.extend(cashier.breaks) 
         available_cashiers: List["Cashier"] = self.cashiers[:]
         
         final_assignments = []
@@ -58,13 +57,13 @@ class BreakManager:
                         
                     minutes_to_move = time_diff_in_minutes(original_break.start_time, shifted_break.start_time)
                                             
-                    success, final_break_object = break_owner.schedule.try_move_interval(original_break, minutes_to_move, commit=True)
+                    success, final_break_object = break_owner.try_move_interval(original_break, minutes_to_move, commit=True)
 
                     if not success:
                         all_breaks_list.append(original_break)
                         continue
 
-                    best_candidate.cashier.schedule.add_interval(original_break) 
+                    best_candidate.cashier.add_interval(original_break) 
                     # Also remove the cashier whose break was just added from available_cashiers if present, so they cannot be assigned as a tauottaja
                     if original_break.cashier in available_cashiers:
                         available_cashiers.remove(original_break.cashier)
@@ -74,8 +73,9 @@ class BreakManager:
                 for b in all_breaks_list:
                     final_assignments.append({"tauottaja": None, "breaks_covered": [b], "total_minutes": b.length_in_minutes()})
                 break
-                        
+
         self.breaks_schedule_list = final_assignments
+        return final_assignments
         
     def _find_best_cashier_assignment(self, all_breaks_list: List["CashierBreak"], available_cashiers: List["Cashier"]) -> AssignmentCandidate | None:
         """Searches all cashiers and returns the one who can cover the most minutes."""
@@ -97,7 +97,7 @@ class BreakManager:
         """
         
         candidate = AssignmentCandidate(cashier)
-        temp_schedule = deepcopy(cashier.schedule)
+        temp_schedule = cashier.copy_schedule()
         
         # Filter own breaks out and sort chronologically
         breaks_to_fit = sorted(
@@ -117,7 +117,7 @@ class BreakManager:
             for shift_move in valid_shift_moves:
                 
                 # Check 1: Is the shifted time valid in the break owner's schedule?
-                fits_cashiers_break_schedule, new_possible_break = break_.cashier.schedule.try_move_interval(break_, shift_move, commit=False)
+                fits_cashiers_break_schedule, new_possible_break = break_.cashier.try_move_interval(break_, shift_move, commit=False)
 
                 if not fits_cashiers_break_schedule:
                     continue
