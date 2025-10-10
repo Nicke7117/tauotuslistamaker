@@ -51,7 +51,8 @@ def main():
     data_manager.load_config("config.json")
     cashiers = data_manager.cashiers
     config = data_manager.config
-    break_manager = BreakManager(cashiers)
+    all_breaks = data_manager.all_breaks
+    break_manager = BreakManager(cashiers, all_breaks)
     break_manager.generate_breaks_list()
     print_tauotuslista_pretty(break_manager.breaks_schedule_list)
 
