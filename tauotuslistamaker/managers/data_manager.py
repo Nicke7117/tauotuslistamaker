@@ -2,15 +2,20 @@ import json
 from datetime import datetime, timedelta
 from ..models import TimeInterval
 from ..models import Cashier
+from ..collections import CashierScheduleCollection
+from pathlib import Path
 
 class DataManager:
+
+    ROOT_FOLDER = Path(__file__).parent.parent
+
     def __init__(self):
         self.cashiers = []
         self.config = {}
 
     def load_data(self, file_name: str) -> None:
         try:
-            with open(file_name, "r") as json_file:
+            with open(self.ROOT_FOLDER / file_name, "r") as json_file:
                 self.cashiers = json.load(json_file)
                 # keep validation and data transformation in separate methods to keep the code clean and maintainable
                 self.__validate_cashiers_data()
@@ -62,12 +67,18 @@ class DataManager:
     def __transform_cashiers_to_cashier_objects(self):
         cashier_objects = []
         for cashier in self.cashiers:
-            cashier_objects.append(Cashier(cashier["name"], cashier["shift_interval"]))
+            # Build a CashierScheduleCollection using the shift interval as the boundary
+            cashier_obj = Cashier(cashier["name"], None)
+            schedule = CashierScheduleCollection(cashier["shift_interval"], cashier_obj)
+            cashier_obj.schedule = schedule
+            schedule.setup_initial_breaks()
+            cashier_objects.append(cashier_obj)
+
         self.cashiers = cashier_objects
         
     def load_config(self, file_name: str) -> None:
         try:
-            with open(file_name, "r") as json_file:
+            with open(self.ROOT_FOLDER / file_name, "r") as json_file:
                 self.config = json.load(json_file)
                 # keep validation and data transformation in separate methods to keep the code clean and maintainable
                 self.__validate_config_data()

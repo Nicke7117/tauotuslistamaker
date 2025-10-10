@@ -1,1 +1,1 @@
-from .time import round_time_to_nearest_quarter
+from .time import round_time_to_nearest_quarter, time_diff_in_minutes

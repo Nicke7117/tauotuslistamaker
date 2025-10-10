@@ -16,12 +16,12 @@ class TimeInterval:
             raise ValueError("Time must be a datetime object")
         return self.start_time < time < self.end_time
     
-    def contains_interval(self, interval: "TimeInterval") -> bool:
+    def contains(self, interval: "TimeInterval") -> bool:
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")
         return self.start_time <= interval.start_time and self.end_time >= interval.end_time
-    
-    def contains_interval_strict(self, interval: "TimeInterval") -> bool:
+
+    def contains_strict(self, interval: "TimeInterval") -> bool:
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")
         return self.start_time < interval.start_time and self.end_time > interval.end_time
@@ -40,21 +40,21 @@ class TimeInterval:
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")
         return self.start_time > interval.end_time
-    
-    def starts_after_or_at(self, time: datetime) -> bool:
-        if not isinstance(time, datetime):
-            raise ValueError("Time must be a datetime object")
-        return self.start_time >= time
-    """Change to take TimeInterval as argument"""
-    def ends_before_or_at(self, time: datetime) -> bool:
-        if not isinstance(time, datetime):
-            raise ValueError("Time must be a datetime object")
-        return self.end_time <= time
-    
-    def ends_after(self, time: datetime) -> bool:
-        if not isinstance(time, datetime):
-            raise ValueError("Time must be a datetime object")
-        return self.end_time > time
+
+    def starts_after_or_at(self, interval: "TimeInterval") -> bool:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        return self.start_time >= interval.start_time
+
+    def ends_before_or_at(self, interval: "TimeInterval") -> bool:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        return self.end_time <= interval.end_time
+
+    def ends_after(self, interval: "TimeInterval") -> bool:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        return self.end_time > interval.end_time
     
     def remove_overlaps(self, *args: "TimeInterval") -> list:
         if not args:
@@ -126,8 +126,26 @@ class TimeInterval:
 
         return smaller_intervals
     
-    def starts_ealier_than(self, time_interval: "TimeInterval") -> bool:
+    def minutes_until_start(self, interval: "TimeInterval") -> int:
+        """
+        Calculates the time difference in minutes from this interval's end_time 
+        to the other interval's start_time. Returns a negative number if they overlap.
+        
+        Example: 
+        A(10:00-11:00).minutes_until_start(B(11:15-12:00)) returns 15.0
+        A(10:00-11:00).minutes_until_start(B(10:30-11:30)) returns -30.0
+        """
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        time_diff = interval.start_time - self.end_time
+        return int(time_diff.total_seconds() / 60)
+    
+    def starts_earlier_than(self, time_interval: "TimeInterval") -> bool:
         if not isinstance(time_interval, TimeInterval):
             raise ValueError("time_interval must be a TimeInterval object")
         return self.start_time < time_interval.start_time
+    
+    def move_by_minutes(self, minutes: int) -> None:
+        self.start_time += timedelta(minutes=minutes)
+        self.end_time += timedelta(minutes=minutes)
         

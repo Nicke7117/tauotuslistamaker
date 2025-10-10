@@ -1,42 +1,84 @@
 import bisect
-
 from ..models import TimeInterval
+from typing import List
 
-"""A class to manage a collection of TimeInterval objects, keeps the intervals sorted and non-overlapping"""
 class TimeIntervalCollection:
     def __init__(self):
-        self.intervals = []
+        self.intervals: List[TimeInterval] = []
+
+    @property
+    def last_interval(self) -> TimeInterval | None:
+        if not self.intervals:
+            return None
+        return self.intervals[-1]
+
+    def remove_interval(self, interval: TimeInterval) -> None:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        try:
+            self.intervals.remove(interval)
+        except ValueError:
+            raise ValueError("Interval not found in the collection")
+
+    def find_interval_index(self, interval: TimeInterval) -> int:
+        try:
+            return self.intervals.index(interval)
+        except ValueError:
+            raise ValueError("Interval not found in the collection")
+
+    def remove_at_index(self, index: int) -> None:
+        if index < 0 or index >= len(self.intervals):
+            raise IndexError("Index out of range")
+        del self.intervals[index]
+
+    def _find_conflict_intervals(self, interval: TimeInterval) -> List[TimeInterval]:
+        """
+        Internal helper: Finds all existing intervals that overlap with the new interval.
+        Returns a list of overlapping intervals (empty list if none).
+        """
+        conflicts = []
+        positions = [iv.start_time for iv in self.intervals]
+        pos = bisect.bisect_left(positions, interval.start_time)
+
+        start_check_index = max(0, pos - 1)
+
+        for i in range(start_check_index, len(self.intervals)):
+            existing_interval = self.intervals[i]
+
+            # Optimization: Stop checking if the existing interval starts AFTER the new one ENDS.
+            if existing_interval.start_time >= interval.end_time:
+                 break
+
+            if existing_interval.overlaps(interval):
+                conflicts.append(existing_interval)
+
+        return conflicts
+
+    def can_add_interval(self, interval: TimeInterval) -> bool:
+        """
+        Checks if an interval can be added without conflicts.
+        Returns True if no conflicts exist, False otherwise.
+        """
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+
+        conflict_intervals = self._find_conflict_intervals(interval)
+
+        return len(conflict_intervals) == 0
 
     def add_interval(self, interval: TimeInterval) -> None:
         """Adds an interval, ensuring no overlaps and maintaining the sorted order."""
-        
-        # Initial validation checks (Boundary check should be in CashierScheduleCollection, 
-        # but is left here for simplicity if this is the only collection)
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")
-            
-        # 1. Use bisect to find pos (O(log n))
+
+        can_add = self.can_add_interval(interval)
+
+        if not can_add:
+            conflicts = self._find_conflict_intervals(interval)
+            interval_info = f"{interval.start_time.strftime('%H:%M')}-{interval.end_time.strftime('%H:%M')}"
+            conflict_str = ", ".join([f"({c.start_time.strftime('%H:%M')} to {c.end_time.strftime('%H:%M')})" for c in conflicts])
+            raise ValueError(f"Interval {interval_info} overlaps with existing intervals: {conflict_str}")
+
         positions = [iv.start_time for iv in self.intervals]
-        pos = bisect.bisect_left(positions, interval.start_time)
-        
-        # 2. Check surrounding neighbors for conflict (O(k))
-        
-        # Start checking from the interval immediately preceding the insertion point (pos - 1).
-        start_check_index = max(0, pos - 1) 
-        
-        # The loop must check all intervals until the optimization break is triggered.
-        # We set the end of the range to the full length of the list.
-        for i in range(start_check_index, len(self.intervals)):
-            existing_interval = self.intervals[i]
-            
-            # (Works because the list is sorted by start_time).
-            if existing_interval.starts_after_or_at(interval):
-                break
-                
-            # Perform the actual overlap check
-            if existing_interval.overlaps(interval):
-                raise ValueError("Interval conflicts with existing entries in the collection.")
-
-        # 3. Insert and maintain order
-        self.intervals.insert(pos, interval)
-
+        insert_pos = bisect.bisect_left(positions, interval.start_time)
+        self.intervals.insert(insert_pos, interval)

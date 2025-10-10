@@ -1,7 +1,47 @@
-from .tauotuslista import create_breaks_list, assign_tauottajat, create_seating_arrangement, get_cashiers_availability
-import copy
-from .managers import DataManager
-from .managers import BreakManager
+from .managers import DataManager, BreakManager
+from datetime import datetime
+from .models import CashierBreak
+
+
+def print_breaks_segments_pretty(segments):
+    """Print segments row-by-row in a user friendly format."""
+    for seg_idx, segment in enumerate(segments, start=1):
+        print(f"Segment {seg_idx}:")
+        for b in segment.intervals:
+            cashier = getattr(b, 'cashier', None)
+            cashier_name = getattr(cashier, 'name', cashier.get('name') if isinstance(cashier, dict) else repr(cashier))
+            start = getattr(b, 'start_time', None)
+            end = getattr(b, 'end_time', None)
+            duration = None
+            try:
+                duration = int((end - start).total_seconds() / 60)
+            except Exception:
+                duration = None
+            assigned_checkout = getattr(b, 'assigned_checkout', None)
+            print(f"  - Cashier: {cashier_name:20} | {start} -> {end} | {duration} min | assigned_checkout={assigned_checkout}")
+
+
+def print_tauottajat_pretty(assignments):
+    """Print tauottaja assignments and the breaks they will cover."""
+    print("\nTauottaja assignments:")
+    for idx, a in enumerate(assignments, start=1):
+        tau = a.get('tauottaja')
+        if tau is None:
+            tau_name = "Generic staff"
+        else:
+            tau_name = getattr(tau, 'name', tau.get('name') if isinstance(tau, dict) else repr(tau))
+        total = a.get('total_minutes')
+        print(f"Tauottaja {idx}: {tau_name} (total_minutes={total})")
+        for b in a.get('breaks_covered', []):
+            cashier = getattr(b, 'cashier', None)
+            cashier_name = getattr(cashier, 'name', cashier.get('name') if isinstance(cashier, dict) else repr(cashier))
+            start = getattr(b, 'start_time', None)
+            end = getattr(b, 'end_time', None)
+            try:
+                dur = int((end - start).total_seconds() / 60)
+            except Exception:
+                dur = None
+            print(f"  - covers: {cashier_name:20} | {start} -> {end} | {dur} min")
 
 
 def main():
@@ -12,48 +52,116 @@ def main():
     cashiers = data_manager.cashiers
     config = data_manager.config
     break_manager = BreakManager(cashiers)
-    breaks_segments = break_manager.breaks_segments_list
-    print(breaks_segments)
-    for segment in breaks_segments:
-        for break_ in segment["breaks"]:
-            print(break_)
-
-    cashiers_availability = get_cashiers_availability(
-        cashiers, breaks_list_with_assigned_tauottajat)
-    cashier_seating_arrangement = create_seating_arrangement(cashiers_availability,
-                                                           config["checkout_lanes_filling_order"], config["self_service_checkouts"])
-    enrich_breaks_list_with_assigned_checkouts(
-        breaks_list_with_assigned_tauottajat, cashier_seating_arrangement)
-    format_output(cashier_seating_arrangement, breaks_list_with_assigned_tauottajat)
-
-def enrich_breaks_list_with_assigned_checkouts(breaks_list, cashier_seating_arrangement):
-    for checkout in cashier_seating_arrangement:
-        for cashier in checkout["cashiers"]:
-            for tauottaja in breaks_list:
-                for break_ in tauottaja["breaks"]:
-                    if break_["name"] == cashier["name"] and cashier["assigned_time_range"]["start_time"] <= break_["start_time"] <= cashier["assigned_time_range"]["end_time"]:
-                        break_["assigned_checkout"] = checkout["checkout"]
+    break_manager.generate_breaks_list()
+    print_tauotuslista_pretty(break_manager.breaks_schedule_list)
 
 
-        
-                
+def print_tauotuslista_pretty(assignments):
+
+    print("\n\n--- Tauottaja Assignment Schedule ---")
     
+    # Check if the list is empty
+    if not assignments:
+        print("No breaks were assigned or covered.")
+        return
 
-def format_output(cashier_seating_arrangement, tauottajat):
-    for checkout in cashier_seating_arrangement:
-        print(f"Checkout {checkout['checkout']}:")
-        # sort cashiers by assigned time range start time
-        checkout["cashiers"].sort(key=lambda x: x["assigned_time_range"]["start_time"])
-        for cashier in checkout["cashiers"]:
-            print(f"\t{cashier['name']} ({cashier["assigned_time_range"]['start_time'].strftime("%H:%M")} - {cashier["assigned_time_range"]['end_time'].strftime("%H:%M")})")
-        print("Tauottajat:")
-        print(tauottajat)
-        for tauottaja in tauottajat:
-            print(f"{tauottaja["name"]}")
-            for break_ in tauottaja["breaks"]:
-                print(f"\t{break_['name']}, checkout {break_['assigned_checkout']} ({break_['start_time'].strftime("%H:%M")} - {break_['end_time'].strftime("%H:%M")})")
+    for idx, a in enumerate(assignments, start=1):
+        tau = a.get('tauottaja')
+        breaks_covered = a.get('breaks_covered', [])
+        total = a.get('total_minutes')
+        
+        # Determine the tauottaja's name
+        if tau is None:
+            tau_name = "UNCOVERED BREAKS (Requires Generic Staff)"
+        else:
+            # Use getattr to safely get the 'name' attribute, falling back to string representation
+            tau_name = getattr(tau, 'name', str(tau))
             
-
+        print(f"\nASSIGNMENT {idx}: {tau_name} 👷")
+        print(f"Total Minutes Covered: {total} min")
+        print("-" * 40)
+        
+        if tau is None:
+            # Handle uncovered breaks
+            if not breaks_covered:
+                print("  - This assignment is empty (Error in logic or debugging).")
+                continue
+                
+            print("  📋 Uncovered Breaks:")
+            for b in breaks_covered:
+                cashier = getattr(b, 'cashier', 'N/A')
+                cashier_name = getattr(cashier, 'name', repr(cashier))
+                start: datetime = getattr(b, 'start_time', None)
+                end: datetime = getattr(b, 'end_time', None)
+                
+                dur = None
+                if start and end:
+                    try:
+                        dur = int((end - start).total_seconds() / 60)
+                    except Exception:
+                        dur = "N/A"
+                
+                start_str = start.strftime('%H:%M') if start else 'N/A'
+                end_str = end.strftime('%H:%M') if end else 'N/A'
+                
+                print(f"    - {cashier_name}'s break: {start_str} - {end_str} | Duration: {dur} min")
+        else:
+            # Show complete schedule for assigned tauottaja
+            print("  📅 Complete Schedule:")
+            if tau.schedule.all_events:
+                for sched_idx, interval in enumerate(sorted(tau.schedule.all_events, key=lambda x: x.start_time), 1):
+                    start_time = getattr(interval, 'start_time', None)
+                    end_time = getattr(interval, 'end_time', None)
+                    
+                    dur = None
+                    if start_time and end_time:
+                        try:
+                            dur = int((end_time - start_time).total_seconds() / 60)
+                        except Exception:
+                            dur = "N/A"
+                    
+                    start_str = start_time.strftime('%H:%M') if start_time else 'N/A'
+                    end_str = end_time.strftime('%H:%M') if end_time else 'N/A'
+                    
+                    # Determine interval type
+                    if isinstance(interval, CashierBreak):
+                        if interval.cashier == tau:
+                            interval_type = "Own Break"
+                            print(f"    {sched_idx}. {start_str}-{end_str} ({dur} min) - {interval_type}")
+                        else:
+                            interval_type = "Break Coverage"
+                            covered_cashier = getattr(interval.cashier, 'name', 'Unknown')
+                            print(f"    {sched_idx}. {start_str}-{end_str} ({dur} min) - {interval_type} ({covered_cashier})")
+                    else:
+                        interval_type = "Work Period"
+                        print(f"    {sched_idx}. {start_str}-{end_str} ({dur} min) - {interval_type}")
+            else:
+                print("    (No scheduled intervals)")
+            
+            # Show breaks specifically covered by this tauottaja
+            print("  💼 Breaks Covered:")
+            if breaks_covered:
+                for b in breaks_covered:
+                    cashier = getattr(b, 'cashier', 'N/A')
+                    cashier_name = getattr(cashier, 'name', repr(cashier))
+                    start: datetime = getattr(b, 'start_time', None)
+                    end: datetime = getattr(b, 'end_time', None)
+                    
+                    dur = None
+                    if start and end:
+                        try:
+                            dur = int((end - start).total_seconds() / 60)
+                        except Exception:
+                            dur = "N/A"
+                    
+                    start_str = start.strftime('%H:%M') if start else 'N/A'
+                    end_str = end.strftime('%H:%M') if end else 'N/A'
+                    
+                    print(f"    - {cashier_name}'s break: {start_str} - {end_str} | Duration: {dur} min")
+            else:
+                print("    (No breaks covered)")
+    
+    print("\n--- End of Schedule ---")
 
 if __name__ == "__main__":
     main()
