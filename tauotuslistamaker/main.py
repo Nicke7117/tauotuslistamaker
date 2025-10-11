@@ -1,4 +1,4 @@
-from .managers import DataManager, BreakManager
+from .managers import DataManager, BreakManager, CheckoutManager
 from datetime import datetime
 from .models import CashierBreak
 
@@ -52,8 +52,10 @@ def main():
     cashiers = data_manager.cashiers
     config = data_manager.config
     all_breaks = data_manager.all_breaks
+    checkouts = data_manager.checkouts
     break_manager = BreakManager(cashiers, all_breaks)
     break_manager.generate_breaks_list()
+    checkout_manager = CheckoutManager(cashiers, checkouts)
     print_tauotuslista_pretty(break_manager.breaks_schedule_list)
 
 

@@ -1,2 +1,3 @@
 from .time_interval_collection import TimeIntervalCollection
 from .cashier_schedule_collection import CashierScheduleCollection
+from .checkout_schedule_collection import CheckoutScheduleCollection

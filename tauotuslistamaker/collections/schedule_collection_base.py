@@ -1,0 +1,83 @@
+from ..models import TimeInterval
+from . import TimeIntervalCollection
+from copy import deepcopy
+
+class ScheduleCollectionBase:
+
+    def __init__(self, boundary_interval: TimeInterval):
+        self.boundary_interval = boundary_interval
+        self.intervals = TimeIntervalCollection()
+        self._availability: list[TimeInterval] | None = None
+
+    @property
+    def all_events(self):
+        return self.intervals.intervals
+
+    @property
+    def availability(self) -> list[TimeInterval]:
+        if self._availability is not None:
+            return self._availability
+        else:
+            calculated_availability = [deepcopy(self.boundary_interval)]
+            for time_interval in self.all_events:
+               new_availability = []
+               for available_interval in calculated_availability:
+                   if available_interval.contains(time_interval):
+                       non_overlapping_parts = available_interval.subtract(time_interval)
+                       new_availability.extend(non_overlapping_parts)
+               calculated_availability = new_availability
+
+            self._availability = calculated_availability
+            return self._availability
+
+    def add_interval(self, interval: TimeInterval) -> None:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        if not self.boundary_interval.contains(interval):
+            raise ValueError("Interval must be within the boundary interval")
+        self.intervals.add_interval(interval)
+        self._availability = None
+
+    def can_add_interval(self, interval: TimeInterval) -> bool:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        if not self.boundary_interval.contains(interval):
+            return False
+        return self.intervals.can_add_interval(interval)
+    
+    def try_move_interval(self, 
+                          original_interval: TimeInterval, 
+                          minutes_to_move: int, 
+                          commit: bool = True) -> tuple[bool, TimeInterval | None]:
+        """
+        Attempts to move an existing interval by a number of minutes.
+        Performs validation against boundaries and conflicts.
+        """
+        if not isinstance(original_interval, TimeInterval) or not isinstance(minutes_to_move, int):
+            raise ValueError("Invalid argument types.")
+        
+        self.intervals.remove_interval(original_interval)
+
+        # Create the new interval and check rules
+        check_interval = deepcopy(original_interval)
+        check_interval.move_by_minutes(minutes_to_move)        
+
+        if not self.boundary_interval.contains(check_interval) or not self.intervals.can_add_interval(check_interval):
+            self.intervals.add_interval(original_interval)
+            return False, original_interval
+
+        # Commit or rollback
+        if commit:
+            original_interval.move_by_minutes(minutes_to_move)
+            self.intervals.add_interval(original_interval)
+            self._availability = None
+            return True, original_interval
+        else:
+            self.intervals.add_interval(original_interval)
+            return True, check_interval
+    
+    def remove_interval(self, interval: TimeInterval) -> None:
+        if not isinstance(interval, TimeInterval):
+            raise ValueError("Interval must be a TimeInterval object")
+        self.intervals.remove_interval(interval)
+        self._availability = None

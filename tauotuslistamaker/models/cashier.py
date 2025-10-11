@@ -20,18 +20,10 @@ class Cashier:
         """Read-only snapshot of this cashier's scheduled breaks."""
         return tuple(self.schedule.all_breaks)
 
-    def get_breaks(self) -> list["CashierBreak"]:
-        """Compatibility shim returning a list copy of :pyattr:`breaks`."""
-        return list(self.breaks)
-
     @property
     def events(self) -> tuple["TimeInterval", ...]:
         """Read-only snapshot of every scheduled interval for the cashier."""
         return tuple(self.schedule.all_events)
-
-    def get_events(self) -> list["TimeInterval"]:
-        """Compatibility shim returning a list copy of :pyattr:`events`."""
-        return list(self.events)
 
     def can_accept_interval(self, interval: "TimeInterval") -> bool:
         """Check if an interval can be added without conflicts or boundary issues."""

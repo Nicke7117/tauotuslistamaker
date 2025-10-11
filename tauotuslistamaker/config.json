@@ -1,8 +1,23 @@
 {
-    "opening_hours": {"opening_time": "08:00", "closing_time": "22:00"}, 
-    "checkout_lanes_filling_order": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-    "most_popular_checkouts": [14, 15],
-    "least_popular_checkouts": [4, 5, 6],
-    "extra_checkouts": [2, 3],
-    "self_service_checkouts": [{"name": "Self Service 1", "opening_time": "09:00", "closing_time": "21:00"}, {"name": "Self Service 2", "opening_time": "09:00", "closing_time": "21:00"}]
+    "checkout_time_groups": [
+        {
+            "opening_time": "08:00",
+            "closing_time": "00:00",
+            "checkouts": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+            "mandatory_open": false
+        },
+        {
+            "opening_time": "09:00",
+            "closing_time": "21:00",
+            "checkouts": ["Self Service 1", "Self Service 2"],
+            "mandatory_open": true
+        }
+    ],
+    "checkouts_filling_order": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+    "tobacco_checkouts": [15, 7, 4],
+    "tobacco_checkout_ratios": [
+        {"max_total_checkouts": 3, "tobacco_checkouts": 1},
+        {"max_total_checkouts": 6, "tobacco_checkouts": 2},
+        {"max_total_checkouts": 9, "tobacco_checkouts": 3}
+    ]
 }
