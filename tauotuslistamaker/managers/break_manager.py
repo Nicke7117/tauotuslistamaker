@@ -5,7 +5,7 @@ from ..utils import time_diff_in_minutes
 from typing import List, Dict, Tuple, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..models import Cashier, CashierBreak
+    from ..models import Cashier, BreakAssignment
 
 
 # Helper to hold the results of a simulation run 
@@ -14,13 +14,13 @@ class AssignmentCandidate:
     cashier: "Cashier"
     total_minutes_covered: int = 0
     # Stores the list of tuples: (original_break, shifted_time_interval)
-    assignments_to_commit: List[Tuple["CashierBreak", "CashierBreak"]] = field(default_factory=list)
+    assignments_to_commit: List[Tuple["BreakAssignment", "BreakAssignment"]] = field(default_factory=list)
 
 
 class BreakManager:
     BREAK_MAX_POSTPONE_MINUTES = 30
     
-    def __init__(self, cashiers: list["Cashier"], all_breaks: List["CashierBreak"]) -> None:
+    def __init__(self, cashiers: list["Cashier"], all_breaks: List["BreakAssignment"]) -> None:
         self.cashiers = cashiers
         self.all_breaks = all_breaks
         self.breaks_schedule_list = []
@@ -61,6 +61,7 @@ class BreakManager:
                         continue
 
                     best_candidate.cashier.add_interval(original_break)
+                    original_break.tauottaja = best_candidate.cashier
 
                     # Also remove the cashier whose break was just added from available_cashiers
                     if original_break.cashier in available_cashiers:

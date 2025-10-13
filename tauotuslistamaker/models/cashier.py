@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..collections import CashierScheduleCollection
-    from .cashier_break import CashierBreak
+    from .break_assignment import BreakAssignment
     from .time_interval import TimeInterval
+    from .available_interval import AvailableInterval
 
 
 class Cashier:
@@ -16,7 +17,12 @@ class Cashier:
         self.schedule = schedule
 
     @property
-    def breaks(self) -> tuple["CashierBreak", ...]:
+    def all_availabilities(self) -> tuple["TimeInterval", ...]:
+        """Read-only snapshot of this cashier's available time intervals."""
+        return tuple(self.schedule.all_availabilities)
+
+    @property
+    def breaks(self) -> tuple["BreakAssignment", ...]:
         """Read-only snapshot of this cashier's scheduled breaks."""
         return tuple(self.schedule.all_breaks)
 

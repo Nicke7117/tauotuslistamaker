@@ -1,6 +1,6 @@
 from .managers import DataManager, BreakManager, CheckoutManager
 from datetime import datetime
-from .models import CashierBreak
+from .models import BreakAssignment
 
 
 def print_breaks_segments_pretty(segments):
@@ -128,7 +128,7 @@ def print_tauotuslista_pretty(assignments):
                     end_str = end_time.strftime('%H:%M') if end_time else 'N/A'
                     
                     # Determine interval type
-                    if isinstance(interval, CashierBreak):
+                    if isinstance(interval, BreakAssignment):
                         if interval.cashier == tau:
                             interval_type = "Own Break"
                             print(f"    {sched_idx}. {start_str}-{end_str} ({dur} min) - {interval_type}")

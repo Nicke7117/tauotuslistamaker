@@ -1,21 +1,21 @@
 from ..models import TimeInterval
-from . import TimeIntervalCollection
 from .schedule_collection_base import ScheduleCollectionBase
 from ..utils import round_time_to_nearest_quarter
 from datetime import timedelta
-from ..models import CashierBreak
-from ..models import Cashier
+from ..models import BreakAssignment, Cashier, AvailableInterval
 
 class CashierScheduleCollection(ScheduleCollectionBase):
 
     def __init__(self, boundary_interval: TimeInterval, cashier: Cashier):
         super().__init__(boundary_interval)
         self.cashier = cashier
-        self.intervals = TimeIntervalCollection()
 
     @property
     def all_breaks(self):
-        return [interval for interval in self.all_events if isinstance(interval, CashierBreak)]
+        return [interval for interval in self.all_events if isinstance(interval, BreakAssignment)]
+    
+    def _wrap_availability(self, interval):
+        return AvailableInterval.for_cashier(start_time=interval.start_time, end_time=interval.end_time, cashier=self.cashier)
 
     def setup_initial_breaks(self):
         """Calculates and commits the required breaks to the schedule."""
@@ -40,7 +40,7 @@ class CashierScheduleCollection(ScheduleCollectionBase):
             
             for length in break_minutes:
                 break_end_time = break_start_time + timedelta(minutes=length)
-                break_interval = CashierBreak(break_start_time, break_end_time, self.cashier)
+                break_interval = BreakAssignment(break_start_time, break_end_time, self.cashier, tauottaja=None)
                 cashier_breaks.append(break_interval)
 
                 # Move to the start of the next break's placement zone

@@ -8,7 +8,7 @@ from ..models import Cashier, Checkout
 from ..collections import CashierScheduleCollection, CheckoutScheduleCollection
 
 if TYPE_CHECKING:
-    from ..models import CashierBreak
+    from ..models import BreakAssignment
 
 class DataManager:
 
@@ -20,11 +20,18 @@ class DataManager:
         self.config = {}
 
     @property
-    def all_breaks(self) -> list["CashierBreak"]:
+    def all_breaks(self) -> list["BreakAssignment"]:
         all_breaks = []
         for cashier in self.cashiers:
             all_breaks.extend(cashier.breaks)
         return all_breaks
+    
+    @property
+    def all_availabilities(self) -> list["TimeInterval"]:
+        all_availabilities = []
+        for cashier in self.cashiers:
+            all_availabilities.extend(cashier.all_availabilities)
+        return all_availabilities
     
     def load_data(self, file_name: str) -> None:
         try:
@@ -182,7 +189,7 @@ class DataManager:
 
                 is_tobacco_authorized = isinstance(identifier, int) and (identifier in tobacco_checkouts_set)
 
-                schedule = CheckoutScheduleCollection(boundary_interval, identifier, None)
+                schedule = CheckoutScheduleCollection(boundary_interval, None)
                 
                 checkout_obj = Checkout(
                     identifier,

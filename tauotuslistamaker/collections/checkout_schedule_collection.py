@@ -1,17 +1,12 @@
-from ..models import TimeInterval, Checkout
+from ..models import TimeInterval, Checkout, AvailableInterval
 from . import TimeIntervalCollection
 from .schedule_collection_base import ScheduleCollectionBase
-from copy import deepcopy
-from typing import Union
 
 class CheckoutScheduleCollection(ScheduleCollectionBase):
 
-    def __init__(self, boundary_interval: TimeInterval, checkout_identifier: Union[str, int], checkout: Checkout) -> None:
-        if isinstance(checkout_identifier, str):
-            self.checkout_identifier = checkout_identifier
-        elif isinstance(checkout_identifier, int):
-            self.checkout_identifier = str(checkout_identifier)
-        else:
-            raise ValueError("checkout_identifier must be a string or integer")
+    def __init__(self, boundary_interval: TimeInterval, checkout: Checkout) -> None:
         super().__init__(boundary_interval)
-        self.intervals = TimeIntervalCollection()
+        self.checkout = checkout
+
+    def _wrap_availability(self, interval):
+        return AvailableInterval.for_checkout(start_time=interval.start_time, end_time=interval.end_time, checkout=self.checkout)

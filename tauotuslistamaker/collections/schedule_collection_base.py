@@ -1,8 +1,9 @@
-from ..models import TimeInterval
+from ..models import TimeInterval, AvailableInterval
 from . import TimeIntervalCollection
 from copy import deepcopy
+from abc import ABC, abstractmethod
 
-class ScheduleCollectionBase:
+class ScheduleCollectionBase(ABC):
 
     def __init__(self, boundary_interval: TimeInterval):
         self.boundary_interval = boundary_interval
@@ -12,9 +13,13 @@ class ScheduleCollectionBase:
     @property
     def all_events(self):
         return self.intervals.intervals
+    
+    @abstractmethod
+    def _wrap_availability(self, interval: TimeInterval) -> AvailableInterval:
+        pass
 
     @property
-    def availability(self) -> list[TimeInterval]:
+    def all_availabilities(self) -> list[AvailableInterval]:
         if self._availability is not None:
             return self._availability
         else:
@@ -27,7 +32,8 @@ class ScheduleCollectionBase:
                        new_availability.extend(non_overlapping_parts)
                calculated_availability = new_availability
 
-            self._availability = calculated_availability
+            final_availability = [self._wrap_availability(interval) for interval in calculated_availability]
+            self._availability = final_availability
             return self._availability
 
     def add_interval(self, interval: TimeInterval) -> None:
