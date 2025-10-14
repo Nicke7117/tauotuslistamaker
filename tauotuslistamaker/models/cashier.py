@@ -17,9 +17,9 @@ class Cashier:
         self.schedule = schedule
 
     @property
-    def all_availabilities(self) -> tuple["TimeInterval", ...]:
+    def availability(self) -> tuple["AvailableInterval", ...]:
         """Read-only snapshot of this cashier's available time intervals."""
-        return tuple(self.schedule.all_availabilities)
+        return tuple(self.schedule.availability)
 
     @property
     def breaks(self) -> tuple["BreakAssignment", ...]:
@@ -45,10 +45,14 @@ class Cashier:
         minutes_to_move: int,
         *,
         commit: bool = True,
-    ) -> tuple[bool, "TimeInterval" | None]:
+    ) -> tuple[bool, "AvailableInterval" | None]:
         """Attempt to move an interval while keeping validations encapsulated."""
         return self.schedule.try_move_interval(interval, minutes_to_move, commit=commit)
 
     def copy_schedule(self) -> "CashierScheduleCollection":
         """Provide a detached copy of the underlying schedule for simulations."""
         return deepcopy(self.schedule)
+    
+    def copy_availability(self) -> list["AvailableInterval"]:
+        """Provide a detached copy of the current availability for simulations."""
+        return deepcopy(self.availability)

@@ -29,12 +29,11 @@ class TimeInterval:
         
         result_intervals = []
         
-        cls = self.__class__
         if self.start_time < interval.start_time:
-            result_intervals.append(cls(self.start_time, interval.start_time))
+            result_intervals.append(TimeInterval(self.start_time, interval.start_time))
 
         if self.end_time > interval.end_time:
-            result_intervals.append(cls(interval.end_time, self.end_time))
+            result_intervals.append(TimeInterval(interval.end_time, self.end_time))
 
         return result_intervals
     

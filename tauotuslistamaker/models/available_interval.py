@@ -1,9 +1,9 @@
 from . import TimeInterval
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
+from .cashier import Cashier
 
 if TYPE_CHECKING:
-    from . import Cashier
     from . import Checkout
 
 class AvailableInterval(TimeInterval):

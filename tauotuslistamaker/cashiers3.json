@@ -1,0 +1,99 @@
+[
+    
+        {
+            "name": "Auvo",
+            "shift_start": "08:00",
+            "shift_end": "16:00"            
+        },
+        {
+            "name": "Lila",
+            "shift_start": "07:30",
+            "shift_end": "9:00"            
+        },
+        {
+            "name": "Lea",
+            "shift_start": "06:00",
+            "shift_end": "14:00"            
+        },
+        {
+            "name": "Linh",
+            "shift_start": "10:00",
+            "shift_end": "18:30"            
+        },
+        {
+            "name": "Riina",
+            "shift_start": "10:30",
+            "shift_end": "18:30"            
+        },
+        {
+            "name": "Sirkka",
+            "shift_start": "10:00",
+            "shift_end": "16:00"            
+        },
+        {
+            "name": "Taru",
+            "shift_start": "10:00",
+            "shift_end": "18:15"            
+        },
+        {
+            "name": "Sirkka Andersson",
+            "shift_start": "09:00",
+            "shift_end": "15:00"            
+        },
+        {
+            "name": "Maru",
+            "shift_start": "12:00",
+            "shift_end": "20:30"            
+        },
+        {
+            "name": "Alla",
+            "shift_start": "13:30",
+            "shift_end": "21:15"            
+        },
+        {
+            "name": "Birgitta",
+            "shift_start": "15:00",
+            "shift_end": "23:30"            
+        },
+        {
+            "name": "Marilou",
+            "shift_start": "16:00",
+            "shift_end": "22:00"            
+        },
+        {
+            "name": "Ziai",
+            "shift_start": "14:00",
+            "shift_end": "21:00"            
+        },
+        {
+            "name": "Laura",
+            "shift_start": "18:00",
+            "shift_end": "22:00"            
+        },
+        {
+            "name": "Galina",
+            "shift_start": "14:30",
+            "shift_end": "22:30"            
+        },
+        {
+            "name": "Nikolas",
+            "shift_start": "18:15",
+            "shift_end": "22:15"            
+        },
+        {
+            "name": "Ritva",
+            "shift_start": "18:30",
+            "shift_end": "00:15"            
+        },
+        {
+            "name": "Helgi",
+            "shift_start": "16:00",
+            "shift_end": "00:00"            
+        },
+        {
+            "name": "Seifi",
+            "shift_start": "14:00",
+            "shift_end": "22:00"            
+        }
+    
+    ]
