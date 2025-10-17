@@ -10,6 +10,10 @@ class TimeInterval:
         self.start_time = start_time
         self.end_time = end_time
 
+    @property
+    def duration_minutes(self) -> int:
+        return int((self.end_time - self.start_time).total_seconds() / 60)
+    
     def contains(self, interval: "TimeInterval") -> bool:
         if not isinstance(interval, TimeInterval):
             raise ValueError("Interval must be a TimeInterval object")

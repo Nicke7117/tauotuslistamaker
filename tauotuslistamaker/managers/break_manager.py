@@ -2,7 +2,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Tuple, Any, TYPE_CHECKING
-from copy import deepcopy
 from ..utils import time_diff_in_minutes
 
 if TYPE_CHECKING:
@@ -165,7 +164,7 @@ class BreakManager:
 
                 available_windows = new_available_windows
                 bonus = 0
-                # Additional bonuses for consecutive, early, or late breaks
+                
                 if best_shift_interval.start_time == last_assigned_end_time:
                     bonus = self.BONUS_PER_CONSECUTIVE_BREAK
                 if best_shift_interval.end_time.hour < self.EARLY_BREAK_BOUNDARY_HOUR:
