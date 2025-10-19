@@ -1,4 +1,4 @@
-# Automated Hypermarket Scheduling Engine
+# Automated Hypermarket Cashier Scheduler
 
 ## Motivation
 
@@ -20,7 +20,7 @@ I started this project two years ago, and finished it already once back some yea
 
 The project is separated into three main folders:
 
-1. **`managers`** that contain the main "managers" of the project; the objects are `BreakManager`, `CheckoutManager`, and `DataManager`. Almost like they could be some real-world job titles assigned to employees, **although** these job titles would maybe have a **little bit** too little **responsibility** :D. But separating the managers into three smaller objects that have a very specific task and that contain all core logic was a good choice in my opinion.
+1. **`managers`** that contain the main "managers" of the project; the objects are `BreakManager`, `CheckoutManager`, and `DataManager`. Almost like they could be some real-world job titles assigned to employees, **although** these job titles would maybe have a **little bit** too little **responsibility**. But separating the managers into three smaller objects that have a very specific task and that contain all core logic was a good choice in my opinion.
 
 2. **`collections`** that contain all the collections. **What do** I mean by collection in this context? Because I work a lot with time intervals, they are the core of the project, so I decided to create my own custom **data structure** for holding those time intervals. It contains `CashierScheduleCollection`, `CheckoutScheduleCollection`, `ScheduleCollectionBase`, and `TimeIntervalCollection`.
 
