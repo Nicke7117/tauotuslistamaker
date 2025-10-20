@@ -97,15 +97,6 @@ class ScheduleCollectionBase(ABC):
         self.intervals.remove_interval(interval)
         self._availability = None 
 
-    def get_continuous_availability_from(self, from_time: "datetime") -> "AvailableInterval":
-        """Get the continuous availability block starting from a specific time."""
-        if not isinstance(from_time, datetime):
-            raise ValueError("from_time must be a datetime object")
-
-        for available_interval in self.availability:
-            if available_interval.start_time <= from_time < available_interval.end_time:
-                return available_interval
-        return None
     
     def is_within_boundary(self, interval: "TimeInterval") -> bool:
         """Check if the given interval is within the boundary interval."""

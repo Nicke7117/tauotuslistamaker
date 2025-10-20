@@ -36,7 +36,10 @@ def main():
                 event_type = type(event).__name__
                 if event_type == "BreakAssignment":
                     if event.cashier == cashier:
-                        event_type = "Own Break"
+                        if event.tauottaja:
+                            event_type = f"Own Break (covered by {event.tauottaja.name})"
+                        else:
+                            event_type = "Own Break (self-covered)"
                     elif event.tauottaja == cashier:
                         event_type = f"Break Coverage (for {event.cashier.name})"
                     else:

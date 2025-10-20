@@ -1,5 +1,25 @@
 # Automated Hypermarket Cashier Scheduler
 
+## Table of Contents
+
+- [Motivation](#motivation)
+- [Principles of the algorithm and the scheduler](#principles-of-the-algorithm-and-the-scheduler)
+- [The algorithm and the architecture](#the-algorithm-and-the-architecture)
+  - [Config and Cashiers shifts](#config-and-cashiers-shifts)
+  - [The TimeInterval object](#the-timeinterval-object)
+  - [TimeIntervalCollection](#timeintervalcollection)
+  - [ScheduleCollectionBase](#schedulecollectionbase)
+  - [BaseAssignment, BreakAssignment and CheckoutAssignment](#baseassignment-breakassignment-and-checkoutassignment)
+  - [Algorithm](#algorithm)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running the Application](#running-the-application)
+  - [Sample Output](#sample-output)
+    - [Sample cashiers.json Content](#sample-cashiersjson-content)
+    - [Sample Output for the Above cashiers.json](#sample-output-for-the-above-cashiersjson)
+
 ## Motivation
 
 After working for two years in Prisma (a grocery store), I encountered the art of making the cashier schedule for the cashiers in a big hypermarket. I immediately saw the potential to automate it to increase the efficiency of day-to-day operations, because this cashier schedule has to be made every day from scratch due to there being a different availability of cashiers day-by-day. The schedule essentially tells which checkout each cashier will be working at any moment during the day, and when each cashier will have their breaks. At first, it sounded easy, but while digging deeper, I realized that it is a complex problem after all.
@@ -79,3 +99,645 @@ By assigning cashiers to checkouts **in 15-minute** intervals at a time, I am ab
 Once all checkouts to be filled are chosen, the algorithm assigns cashiers to those checkouts. The algorithm first attempts to extend the assignment of the cashier who was at that specific checkout in the previous time interval, preserving flow and continuity. If the previous cashier is now due for a break, the system automatically assigns their designated reliever to the checkout, guaranteeing the continuity of service. Only after prioritizing continuity and scheduled breaks does the system look to assign any remaining available cashiers to the remaining open checkouts, creating new `CheckoutAssignment` intervals.
 
 This algorithm maximizes **efficiency** in **the** breaks schedule and also maximizes operational efficiency and customer-friendly checkout assignments.
+
+## Getting Started
+
+### Prerequisites
+
+- **Python 3.10** or later
+- No external dependencies required (uses only Python standard library)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Nicke7117/tauotuslistamaker.git
+   cd tauotuslistamaker
+   ```
+
+2. **Verify Python installation:**
+   ```bash
+   py --version
+   # Should show Python 3.10 or later
+   ```
+
+### Configuration
+
+The application uses two JSON configuration files:
+
+1. **`cashiers.json`** - Contains cashier information:
+   ```json
+   [
+     {
+       "name": "John Doe",
+       "shift_start": "08:00",
+       "shift_end": "16:00"
+     }
+   ]
+   ```
+
+2. **`config.json`** - Contains checkout configuration and rules (see detailed explanation below)
+
+Modify these files according to your store's requirements before running the scheduler.
+
+### Running the Application
+
+Execute the scheduler from the project root:
+
+```bash
+py -m tauotuslistamaker.main
+```
+
+The application will:
+1. Load cashier data from `cashiers.json`
+2. Load configuration from `config.json`
+3. Generate break assignments using the greedy algorithm
+4. Assign cashiers to checkouts in 15-minute intervals
+5. Display the complete schedule with breaks and checkout assignments
+
+### Sample Output
+
+The program generates three main sections:
+- **Breaks List Schedule**: Shows which cashiers are assigned as relievers (tauottajas) and which breaks they cover
+- **All Cashiers' Personal Schedules**: Individual schedules for each cashier showing their breaks and checkout assignments
+- **Checkout Assignment Schedule**: Shows which cashiers are assigned to each checkout over time
+
+#### Sample cashiers.json Content
+
+```json
+[
+    {
+        "name": "Riley Rivera",
+        "shift_start": "11:00",
+        "shift_end": "19:15"
+    },
+    {
+        "name": "Hunter Wilson",
+        "shift_start": "08:00",
+        "shift_end": "16:00"
+    },
+    {
+        "name": "Avery Martin",
+        "shift_start": "16:00",
+        "shift_end": "00:00"
+    },
+    {
+        "name": "Tanner Garcia",
+        "shift_start": "10:30",
+        "shift_end": "18:15"
+    },
+    {
+        "name": "Harper Hill",
+        "shift_start": "17:15",
+        "shift_end": "21:15"
+    },
+    {
+        "name": "Taylor Moore",
+        "shift_start": "09:00",
+        "shift_end": "17:15"
+    },
+    {
+        "name": "Dana Johnson",
+        "shift_start": "06:00",
+        "shift_end": "14:00"
+    },
+    {
+        "name": "Noah Martin",
+        "shift_start": "09:30",
+        "shift_end": "16:30"
+    },
+    {
+        "name": "Hunter Taylor",
+        "shift_start": "14:00",
+        "shift_end": "22:00"            
+    },
+    {
+        "name": "Sage Adams",
+        "shift_start": "10:00",
+        "shift_end": "17:30"            
+    },
+    {
+        "name": "Drew Ramirez",
+        "shift_start": "12:00",
+        "shift_end": "20:00"            
+    },
+    {
+        "name": "Quinn Brown",
+        "shift_start": "12:45",
+        "shift_end": "17:30"            
+    },
+    {
+        "name": "Riley Thompson",
+        "shift_start": "18:15",
+        "shift_end": "00:15"            
+    },
+    {
+        "name": "Ellis Garcia",
+        "shift_start": "07:30",
+        "shift_end": "15:30"            
+    },
+    {
+        "name": "Taylor Garcia",
+        "shift_start": "15:30",
+        "shift_end": "23:30"            
+    }
+]
+```
+
+#### Sample Output for the Above cashiers.json
+
+```
+--- Breaks List Schedule ---
+Tauottaja 1: Riley Rivera (total_minutes=690.0)
+  - covers: Taylor Moore | 1900-01-01 11:00:00 -> 1900-01-01 11:15:00
+  - covers: Noah Martin | 1900-01-01 11:15:00 -> 1900-01-01 11:30:00
+  - covers: Ellis Garcia | 1900-01-01 11:30:00 -> 1900-01-01 12:00:00
+  - covers: Sage Adams | 1900-01-01 12:00:00 -> 1900-01-01 12:15:00
+  - covers: Hunter Wilson | 1900-01-01 12:15:00 -> 1900-01-01 12:45:00
+  - covers: Tanner Garcia | 1900-01-01 12:45:00 -> 1900-01-01 13:00:00
+  - covers: Dana Johnson | 1900-01-01 13:15:00 -> 1900-01-01 13:30:00
+  - covers: Taylor Moore | 1900-01-01 13:30:00 -> 1900-01-01 14:00:00
+  - covers: Sage Adams | 1900-01-01 14:00:00 -> 1900-01-01 14:30:00
+  - covers: Drew Ramirez | 1900-01-01 14:30:00 -> 1900-01-01 14:45:00
+  - covers: Noah Martin | 1900-01-01 14:45:00 -> 1900-01-01 15:00:00
+  - covers: Hunter Wilson | 1900-01-01 15:00:00 -> 1900-01-01 15:15:00
+  - covers: Taylor Moore | 1900-01-01 15:45:00 -> 1900-01-01 16:00:00
+  - covers: Hunter Taylor | 1900-01-01 16:00:00 -> 1900-01-01 16:15:00
+  - covers: Drew Ramirez | 1900-01-01 16:15:00 -> 1900-01-01 16:45:00
+  - covers: Sage Adams | 1900-01-01 16:45:00 -> 1900-01-01 17:00:00
+  - covers: Tanner Garcia | 1900-01-01 17:00:00 -> 1900-01-01 17:15:00
+  - covers: Taylor Garcia | 1900-01-01 17:15:00 -> 1900-01-01 17:30:00
+  - covers: Avery Martin | 1900-01-01 17:30:00 -> 1900-01-01 17:45:00
+  - covers: Hunter Taylor | 1900-01-01 18:00:00 -> 1900-01-01 18:30:00
+  - covers: Drew Ramirez | 1900-01-01 18:30:00 -> 1900-01-01 18:45:00
+  - covers: Harper Hill | 1900-01-01 18:45:00 -> 1900-01-01 19:00:00
+Tauottaja 2: Hunter Taylor (total_minutes=225.0)
+  - covers: Ellis Garcia | 1900-01-01 14:00:00 -> 1900-01-01 14:15:00
+  - covers: Tanner Garcia | 1900-01-01 14:15:00 -> 1900-01-01 14:45:00
+  - covers: Quinn Brown | 1900-01-01 14:45:00 -> 1900-01-01 15:00:00
+  - covers: Taylor Garcia | 1900-01-01 19:15:00 -> 1900-01-01 19:45:00
+  - covers: Avery Martin | 1900-01-01 19:45:00 -> 1900-01-01 20:15:00
+  - covers: Riley Thompson | 1900-01-01 20:15:00 -> 1900-01-01 20:30:00
+  - covers: Taylor Garcia | 1900-01-01 21:45:00 -> 1900-01-01 22:00:00
+Tauottaja 3: Noah Martin (total_minutes=112.5)
+  - covers: Ellis Garcia | 1900-01-01 09:30:00 -> 1900-01-01 09:45:00
+  - covers: Hunter Wilson | 1900-01-01 09:45:00 -> 1900-01-01 10:00:00
+  - covers: Dana Johnson | 1900-01-01 10:00:00 -> 1900-01-01 10:30:00
+Tauottaja 4: Taylor Garcia (total_minutes=60.0)
+  - covers: Riley Thompson | 1900-01-01 22:00:00 -> 1900-01-01 22:15:00
+  - covers: Avery Martin | 1900-01-01 22:15:00 -> 1900-01-01 22:30:00
+Tauottaja 5: None (total_minutes=15.0)
+  - covers: Dana Johnson | 1900-01-01 08:00:00 -> 1900-01-01 08:15:00
+
+
+--- All Cashiers' Personal Schedules ---
+
+CASHIER: Riley Rivera
+----------------------------------------
+   Schedule:
+     1. 11:00-11:15 (15 min) - Break Coverage (for Taylor Moore)
+     2. 11:15-11:30 (15 min) - Break Coverage (for Noah Martin)
+     3. 11:30-12:00 (30 min) - Break Coverage (for Ellis Garcia)
+     4. 12:00-12:15 (15 min) - Break Coverage (for Sage Adams)
+     5. 12:15-12:45 (30 min) - Break Coverage (for Hunter Wilson)
+     6. 12:45-13:00 (15 min) - Break Coverage (for Tanner Garcia)
+     7. 13:00-13:15 (15 min) - Own Break (self-covered)
+     8. 13:15-13:30 (15 min) - Break Coverage (for Dana Johnson)
+     9. 13:30-14:00 (30 min) - Break Coverage (for Taylor Moore)
+     10. 14:00-14:30 (30 min) - Break Coverage (for Sage Adams)
+     11. 14:30-14:45 (15 min) - Break Coverage (for Drew Ramirez)
+     12. 14:45-15:00 (15 min) - Break Coverage (for Noah Martin)
+     13. 15:00-15:15 (15 min) - Break Coverage (for Hunter Wilson)
+     14. 15:15-15:45 (30 min) - Own Break (self-covered)
+     15. 15:45-16:00 (15 min) - Break Coverage (for Taylor Moore)
+     16. 16:00-16:15 (15 min) - Break Coverage (for Hunter Taylor)
+     17. 16:15-16:45 (30 min) - Break Coverage (for Drew Ramirez)
+     18. 16:45-17:00 (15 min) - Break Coverage (for Sage Adams)
+     19. 17:00-17:15 (15 min) - Break Coverage (for Tanner Garcia)
+     20. 17:15-17:30 (15 min) - Break Coverage (for Taylor Garcia)
+     21. 17:30-17:45 (15 min) - Break Coverage (for Avery Martin)
+     22. 17:45-18:00 (15 min) - Own Break (self-covered)
+     23. 18:00-18:30 (30 min) - Break Coverage (for Hunter Taylor)
+     24. 18:30-18:45 (15 min) - Break Coverage (for Drew Ramirez)
+     25. 18:45-19:00 (15 min) - Break Coverage (for Harper Hill)
+     26. 19:00-19:15 (15 min) - Checkout
+
+CASHIER: Hunter Wilson
+----------------------------------------
+   Schedule:
+     1. 08:00-09:45 (105 min) - Checkout
+     2. 09:45-10:00 (15 min) - Own Break (covered by Noah Martin)
+     3. 10:00-12:15 (135 min) - Checkout
+     4. 12:15-12:45 (30 min) - Own Break (covered by Riley Rivera)
+     5. 12:45-15:00 (135 min) - Checkout
+     6. 15:00-15:15 (15 min) - Own Break (covered by Riley Rivera)
+     7. 15:15-16:00 (45 min) - Checkout
+
+CASHIER: Avery Martin
+----------------------------------------
+   Schedule:
+     1. 16:00-16:30 (30 min) - Checkout
+     2. 16:30-17:30 (60 min) - Checkout
+     3. 17:30-17:45 (15 min) - Own Break (covered by Riley Rivera)
+     4. 17:45-19:45 (120 min) - Checkout
+     5. 19:45-20:15 (30 min) - Own Break (covered by Hunter Taylor)
+     6. 20:15-22:15 (120 min) - Checkout
+     7. 22:15-22:30 (15 min) - Own Break (covered by Taylor Garcia)
+     8. 22:30-00:00 (90 min) - Checkout
+
+CASHIER: Tanner Garcia
+----------------------------------------
+   Schedule:
+     1. 10:30-12:45 (135 min) - Checkout
+     2. 12:45-13:00 (15 min) - Own Break (covered by Riley Rivera)
+     3. 13:00-14:15 (75 min) - Checkout
+     4. 14:15-14:45 (30 min) - Own Break (covered by Hunter Taylor)
+     5. 14:45-17:00 (135 min) - Checkout
+     6. 17:00-17:15 (15 min) - Own Break (covered by Riley Rivera)
+     7. 17:15-18:15 (60 min) - Checkout
+
+CASHIER: Harper Hill
+----------------------------------------
+   Schedule:
+     1. 17:15-18:45 (90 min) - Checkout
+     2. 18:45-19:00 (15 min) - Own Break (covered by Riley Rivera)
+     3. 19:00-21:00 (120 min) - Checkout
+     4. 21:00-21:15 (15 min) - Checkout
+
+CASHIER: Taylor Moore
+----------------------------------------
+   Schedule:
+     1. 09:00-11:00 (120 min) - Checkout
+     2. 11:00-11:15 (15 min) - Own Break (covered by Riley Rivera)
+     3. 11:15-13:30 (135 min) - Checkout
+     4. 13:30-14:00 (30 min) - Own Break (covered by Riley Rivera)
+     5. 14:00-15:45 (105 min) - Checkout
+     6. 15:45-16:00 (15 min) - Own Break (covered by Riley Rivera)
+     7. 16:00-17:15 (75 min) - Checkout
+
+CASHIER: Dana Johnson
+----------------------------------------
+   Schedule:
+     1. 06:00-08:00 (120 min) - Checkout
+     2. 08:00-08:15 (15 min) - Own Break (self-covered)
+     3. 08:15-09:00 (45 min) - Checkout
+     4. 09:00-10:00 (60 min) - Checkout
+     5. 10:00-10:30 (30 min) - Own Break (covered by Noah Martin)
+     6. 10:30-13:15 (165 min) - Checkout
+     7. 13:15-13:30 (15 min) - Own Break (covered by Riley Rivera)
+     8. 13:30-14:00 (30 min) - Checkout
+
+CASHIER: Noah Martin
+----------------------------------------
+   Schedule:
+     1. 09:30-09:45 (15 min) - Break Coverage (for Ellis Garcia)
+     2. 09:45-10:00 (15 min) - Break Coverage (for Hunter Wilson)
+     3. 10:00-10:30 (30 min) - Break Coverage (for Dana Johnson)
+     4. 10:30-11:15 (45 min) - Checkout
+     5. 11:15-11:30 (15 min) - Own Break (covered by Riley Rivera)
+     6. 11:30-14:45 (195 min) - Checkout
+     7. 14:45-15:00 (15 min) - Own Break (covered by Riley Rivera)
+     8. 15:00-16:30 (90 min) - Checkout
+
+CASHIER: Hunter Taylor
+----------------------------------------
+   Schedule:
+     1. 14:00-14:15 (15 min) - Break Coverage (for Ellis Garcia)
+     2. 14:15-14:45 (30 min) - Break Coverage (for Tanner Garcia)
+     3. 14:45-15:00 (15 min) - Break Coverage (for Quinn Brown)
+     4. 15:00-16:00 (60 min) - Checkout
+     5. 16:00-16:15 (15 min) - Own Break (covered by Riley Rivera)
+     6. 16:15-17:30 (75 min) - Checkout
+     7. 17:30-18:00 (30 min) - Checkout
+     8. 18:00-18:30 (30 min) - Own Break (covered by Riley Rivera)
+     9. 18:30-19:15 (45 min) - Checkout
+     10. 19:15-19:45 (30 min) - Break Coverage (for Taylor Garcia)
+     11. 19:45-20:15 (30 min) - Break Coverage (for Avery Martin)
+     12. 20:15-20:30 (15 min) - Break Coverage (for Riley Thompson)
+     13. 20:30-20:45 (15 min) - Checkout
+     14. 20:45-21:00 (15 min) - Own Break (self-covered)
+     15. 21:00-21:45 (45 min) - Checkout
+     16. 21:45-22:00 (15 min) - Break Coverage (for Taylor Garcia)
+
+CASHIER: Sage Adams
+----------------------------------------
+   Schedule:
+     1. 10:00-12:00 (120 min) - Checkout
+     2. 12:00-12:15 (15 min) - Own Break (covered by Riley Rivera)
+     3. 12:15-14:00 (105 min) - Checkout
+     4. 14:00-14:30 (30 min) - Own Break (covered by Riley Rivera)
+     5. 14:30-16:45 (135 min) - Checkout
+     6. 16:45-17:00 (15 min) - Own Break (covered by Riley Rivera)
+     7. 17:00-17:30 (30 min) - Checkout
+
+CASHIER: Drew Ramirez
+----------------------------------------
+   Schedule:
+     1. 12:00-14:30 (150 min) - Checkout
+     2. 14:30-14:45 (15 min) - Own Break (covered by Riley Rivera)
+     3. 14:45-16:15 (90 min) - Checkout
+     4. 16:15-16:45 (30 min) - Own Break (covered by Riley Rivera)
+     5. 16:45-18:30 (105 min) - Checkout
+     6. 18:30-18:45 (15 min) - Own Break (covered by Riley Rivera)
+     7. 18:45-20:00 (75 min) - Checkout
+
+CASHIER: Quinn Brown
+----------------------------------------
+   Schedule:
+     1. 12:45-14:00 (75 min) - Checkout
+     2. 14:00-14:45 (45 min) - Checkout
+     3. 14:45-15:00 (15 min) - Own Break (covered by Hunter Taylor)
+     4. 15:00-17:30 (150 min) - Checkout
+
+CASHIER: Riley Thompson
+----------------------------------------
+   Schedule:
+     1. 18:15-19:15 (60 min) - Checkout
+     2. 19:15-20:15 (60 min) - Checkout
+     3. 20:15-20:30 (15 min) - Own Break (covered by Hunter Taylor)
+     4. 20:30-21:00 (30 min) - Checkout
+     5. 21:00-21:15 (15 min) - Checkout
+     6. 21:15-21:45 (30 min) - Checkout
+     7. 21:45-22:00 (15 min) - Checkout
+     8. 22:00-22:15 (15 min) - Own Break (covered by Taylor Garcia)
+     9. 22:15-00:00 (105 min) - Checkout
+
+CASHIER: Ellis Garcia
+----------------------------------------
+   Schedule:
+     1. 07:30-09:30 (120 min) - Checkout
+     2. 09:30-09:45 (15 min) - Own Break (covered by Noah Martin)
+     3. 09:45-11:30 (105 min) - Checkout
+     4. 11:30-12:00 (30 min) - Own Break (covered by Riley Rivera)
+     5. 12:00-14:00 (120 min) - Checkout
+     6. 14:00-14:15 (15 min) - Own Break (covered by Hunter Taylor)
+     7. 14:15-15:30 (75 min) - Checkout
+
+CASHIER: Taylor Garcia
+----------------------------------------
+   Schedule:
+     1. 15:30-17:15 (105 min) - Checkout
+     2. 17:15-17:30 (15 min) - Own Break (covered by Riley Rivera)
+     3. 17:30-19:15 (105 min) - Checkout
+     4. 19:15-19:45 (30 min) - Own Break (covered by Hunter Taylor)
+     5. 19:45-20:00 (15 min) - Checkout
+     6. 20:00-21:45 (105 min) - Checkout
+     7. 21:45-22:00 (15 min) - Own Break (covered by Hunter Taylor)
+     8. 22:00-22:15 (15 min) - Break Coverage (for Riley Thompson)
+     9. 22:15-22:30 (15 min) - Break Coverage (for Avery Martin)
+     10. 22:30-23:30 (60 min) - Checkout
+
+--- End of Cashiers' Schedules ---
+
+
+--- Checkout Assignment Schedule ---
+
+CHECKOUT 15
+   Type: Tobacco Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     06:00-08:00 (120 min) - Dana Johnson (Checkout)
+     08:00-09:45 (105 min) - Hunter Wilson (Checkout)
+     09:45-10:00 (15 min) - Hunter Wilson (Break)
+       Tauottaja: Noah Martin
+     10:00-12:15 (135 min) - Hunter Wilson (Checkout)
+     12:15-12:45 (30 min) - Hunter Wilson (Break)
+       Tauottaja: Riley Rivera
+     12:45-15:00 (135 min) - Hunter Wilson (Checkout)
+     15:00-15:15 (15 min) - Hunter Wilson (Break)
+       Tauottaja: Riley Rivera
+     15:15-16:00 (45 min) - Hunter Wilson (Checkout)
+     16:00-16:30 (30 min) - Avery Martin (Checkout)
+     17:45-19:45 (120 min) - Avery Martin (Checkout)
+     19:45-20:15 (30 min) - Avery Martin (Break)
+       Tauottaja: Hunter Taylor
+     20:15-22:15 (120 min) - Avery Martin (Checkout)
+     22:15-22:30 (15 min) - Avery Martin (Break)
+       Tauottaja: Taylor Garcia
+     22:30-00:00 (90 min) - Avery Martin (Checkout)
+
+CHECKOUT 14
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     10:30-12:45 (135 min) - Tanner Garcia (Checkout)
+     12:45-13:00 (15 min) - Tanner Garcia (Break)
+       Tauottaja: Riley Rivera
+     13:00-14:15 (75 min) - Tanner Garcia (Checkout)
+     14:15-14:45 (30 min) - Tanner Garcia (Break)
+       Tauottaja: Hunter Taylor
+     14:45-17:00 (135 min) - Tanner Garcia (Checkout)
+     17:00-17:15 (15 min) - Tanner Garcia (Break)
+       Tauottaja: Riley Rivera
+     17:15-18:15 (60 min) - Tanner Garcia (Checkout)
+     18:15-19:15 (60 min) - Riley Thompson (Checkout)
+     21:00-21:15 (15 min) - Riley Thompson (Checkout)
+
+CHECKOUT 13
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     10:30-11:15 (45 min) - Noah Martin (Checkout)
+     11:15-11:30 (15 min) - Noah Martin (Break)
+       Tauottaja: Riley Rivera
+     11:30-14:45 (195 min) - Noah Martin (Checkout)
+     14:45-15:00 (15 min) - Noah Martin (Break)
+       Tauottaja: Riley Rivera
+     15:00-16:30 (90 min) - Noah Martin (Checkout)
+     16:30-17:30 (60 min) - Avery Martin (Checkout)
+
+CHECKOUT 12
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     12:00-14:30 (150 min) - Drew Ramirez (Checkout)
+     14:30-14:45 (15 min) - Drew Ramirez (Break)
+       Tauottaja: Riley Rivera
+     14:45-16:15 (90 min) - Drew Ramirez (Checkout)
+     16:15-16:45 (30 min) - Drew Ramirez (Break)
+       Tauottaja: Riley Rivera
+     16:45-18:30 (105 min) - Drew Ramirez (Checkout)
+     18:30-18:45 (15 min) - Drew Ramirez (Break)
+       Tauottaja: Riley Rivera
+     18:45-20:00 (75 min) - Drew Ramirez (Checkout)
+     20:00-21:45 (105 min) - Taylor Garcia (Checkout)
+     21:45-22:00 (15 min) - Taylor Garcia (Break)
+       Tauottaja: Hunter Taylor
+
+CHECKOUT 11
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     12:45-14:00 (75 min) - Quinn Brown (Checkout)
+     15:00-16:00 (60 min) - Hunter Taylor (Checkout)
+     16:00-16:15 (15 min) - Hunter Taylor (Break)
+       Tauottaja: Riley Rivera
+     16:15-17:30 (75 min) - Hunter Taylor (Checkout)
+
+CHECKOUT 10
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 9
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 8
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 7
+   Type: Tobacco Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     07:30-09:30 (120 min) - Ellis Garcia (Checkout)
+     09:30-09:45 (15 min) - Ellis Garcia (Break)
+       Tauottaja: Noah Martin
+     09:45-11:30 (105 min) - Ellis Garcia (Checkout)
+     11:30-12:00 (30 min) - Ellis Garcia (Break)
+       Tauottaja: Riley Rivera
+     12:00-14:00 (120 min) - Ellis Garcia (Checkout)
+     14:00-14:15 (15 min) - Ellis Garcia (Break)
+       Tauottaja: Hunter Taylor
+     14:15-15:30 (75 min) - Ellis Garcia (Checkout)
+     15:30-17:15 (105 min) - Taylor Garcia (Checkout)
+     17:15-17:30 (15 min) - Taylor Garcia (Break)
+       Tauottaja: Riley Rivera
+     17:30-19:15 (105 min) - Taylor Garcia (Checkout)
+     19:15-19:45 (30 min) - Taylor Garcia (Break)
+       Tauottaja: Hunter Taylor
+     19:45-20:00 (15 min) - Taylor Garcia (Checkout)
+     20:30-20:45 (15 min) - Hunter Taylor (Checkout)
+     21:00-21:15 (15 min) - Harper Hill (Checkout)
+     21:15-21:45 (30 min) - Riley Thompson (Checkout)
+     22:15-00:00 (105 min) - Riley Thompson (Checkout)
+
+CHECKOUT 6
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 5
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 4
+   Type: Tobacco Checkout
+   Status: Optional
+----------------------------------------
+   Assignments:
+     08:15-09:00 (45 min) - Dana Johnson (Checkout)
+     10:00-12:00 (120 min) - Sage Adams (Checkout)
+     12:00-12:15 (15 min) - Sage Adams (Break)
+       Tauottaja: Riley Rivera
+     12:15-14:00 (105 min) - Sage Adams (Checkout)
+     14:00-14:30 (30 min) - Sage Adams (Break)
+       Tauottaja: Riley Rivera
+     14:30-16:45 (135 min) - Sage Adams (Checkout)
+     16:45-17:00 (15 min) - Sage Adams (Break)
+       Tauottaja: Riley Rivera
+     17:00-17:30 (30 min) - Sage Adams (Checkout)
+     19:00-19:15 (15 min) - Riley Rivera (Checkout)
+     21:00-21:45 (45 min) - Hunter Taylor (Checkout)
+     21:45-22:00 (15 min) - Riley Thompson (Checkout)
+     22:30-23:30 (60 min) - Taylor Garcia (Checkout)
+
+CHECKOUT 3
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 2
+   Type: Regular Checkout
+   Status: Optional
+----------------------------------------
+   No assignments
+
+CHECKOUT 1
+   Type: Regular Checkout
+   Status: Mandatory Open
+----------------------------------------
+   Assignments:
+     09:00-11:00 (120 min) - Taylor Moore (Checkout)
+     11:00-11:15 (15 min) - Taylor Moore (Break)
+       Tauottaja: Riley Rivera
+     11:15-13:30 (135 min) - Taylor Moore (Checkout)
+     13:30-14:00 (30 min) - Taylor Moore (Break)
+       Tauottaja: Riley Rivera
+     14:00-15:45 (105 min) - Taylor Moore (Checkout)
+     15:45-16:00 (15 min) - Taylor Moore (Break)
+       Tauottaja: Riley Rivera
+     16:00-17:15 (75 min) - Taylor Moore (Checkout)
+     17:15-18:45 (90 min) - Harper Hill (Checkout)
+     18:45-19:00 (15 min) - Harper Hill (Break)
+       Tauottaja: Riley Rivera
+     19:00-21:00 (120 min) - Harper Hill (Checkout)
+
+CHECKOUT Self Service 1
+   Type: Regular Checkout
+   Status: Mandatory Open
+----------------------------------------
+   Assignments:
+     09:00-10:00 (60 min) - Dana Johnson (Checkout)
+     10:00-10:30 (30 min) - Dana Johnson (Break)
+       Tauottaja: Noah Martin
+     10:30-13:15 (165 min) - Dana Johnson (Checkout)
+     13:15-13:30 (15 min) - Dana Johnson (Break)
+       Tauottaja: Riley Rivera
+     13:30-14:00 (30 min) - Dana Johnson (Checkout)
+     14:00-14:45 (45 min) - Quinn Brown (Checkout)
+     14:45-15:00 (15 min) - Quinn Brown (Break)
+       Tauottaja: Hunter Taylor
+     15:00-17:30 (150 min) - Quinn Brown (Checkout)
+     17:30-18:00 (30 min) - Hunter Taylor (Checkout)
+     18:00-18:30 (30 min) - Hunter Taylor (Break)
+       Tauottaja: Riley Rivera
+     18:30-19:15 (45 min) - Hunter Taylor (Checkout)
+     19:15-20:15 (60 min) - Riley Thompson (Checkout)
+     20:15-20:30 (15 min) - Riley Thompson (Break)
+       Tauottaja: Hunter Taylor
+     20:30-21:00 (30 min) - Riley Thompson (Checkout)
+
+CHECKOUT Self Service 2
+   Type: Regular Checkout
+   Status: Mandatory Open
+----------------------------------------
+   Assignments:
+     09:00-10:00 (60 min) - Dana Johnson (Checkout)
+     10:00-10:30 (30 min) - Dana Johnson (Break)
+       Tauottaja: Noah Martin
+     10:30-13:15 (165 min) - Dana Johnson (Checkout)
+     13:15-13:30 (15 min) - Dana Johnson (Break)
+       Tauottaja: Riley Rivera
+     13:30-14:00 (30 min) - Dana Johnson (Checkout)
+     14:00-14:45 (45 min) - Quinn Brown (Checkout)
+     14:45-15:00 (15 min) - Quinn Brown (Break)
+       Tauottaja: Hunter Taylor
+     15:00-17:30 (150 min) - Quinn Brown (Checkout)
+     17:30-18:00 (30 min) - Hunter Taylor (Checkout)
+     18:00-18:30 (30 min) - Hunter Taylor (Break)
+       Tauottaja: Riley Rivera
+     18:30-19:15 (45 min) - Hunter Taylor (Checkout)
+     19:15-20:15 (60 min) - Riley Thompson (Checkout)
+     20:15-20:30 (15 min) - Riley Thompson (Break)
+       Tauottaja: Hunter Taylor
+     20:30-21:00 (30 min) - Riley Thompson (Checkout)
+
+--- End of Checkout Assignment Schedule ---
+```
