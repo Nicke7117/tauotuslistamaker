@@ -41,11 +41,11 @@ def main():
                         else:
                             event_type = "Own Break (self-covered)"
                     elif event.tauottaja == cashier:
-                        event_type = f"Break Coverage (for {event.cashier.name})"
+                        event_type = f"Break Coverage (for {event.cashier.name} at checkout: {event.checkout.identifier if event.checkout else 'N/A'})"
                     else:
                         event_type = "Break"
                 elif event_type == "CheckoutAssignment":
-                    event_type = "Checkout"
+                    event_type = "Checkout at " + (event.checkout.identifier if event.checkout else "Unknown Checkout")
                 start_time = event.start_time.strftime("%H:%M")
                 end_time = event.end_time.strftime("%H:%M")
                 duration = (event.end_time - event.start_time).total_seconds() / 60
